@@ -6,3 +6,4 @@ from .vis_utils import *
 from .geom_ops import *
 from .distances import *
 from .volume_utils import *
+from .optimization_utils import *

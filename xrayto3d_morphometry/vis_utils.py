@@ -1,5 +1,6 @@
 import vedo
-from typing import List
+from typing import List, Sequence
+from .tuple_ops import *
 
 def get_oriented_camera(mesh_obj:vedo.Mesh,axis,camera_dist=200):
     """return a camera dict with 
@@ -36,3 +37,6 @@ def get_direction_axes_from_ellipsoid(ellipsoid:vedo.Ellipsoid)-> List[vedo.Mesh
     return get_direction_axes(ellipsoid.center,ellipsoid.axis1,
                            ellipsoid.axis2,
                            ellipsoid.axis3)
+
+def get_arrow_actor(origin:Sequence[float],direction:Sequence[float],scale=20):
+    return vedo.Arrow(origin,add_tuple(origin,multiply_tuple_scalar(direction,scale)))

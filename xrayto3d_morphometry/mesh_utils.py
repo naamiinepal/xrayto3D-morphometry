@@ -24,7 +24,6 @@ def get_mesh_from_segmentation(filename:str,largest_component=True,flying_edges=
     
     np_volume = vedo.Volume(sitk.GetArrayFromImage(sitk_volume))
     
-    # get mesh from isosurface centered at (0,0,0)
     mesh_obj:vedo.Mesh = np_volume.isosurface(flying_edges=flying_edges)
     mesh_obj = mesh_obj.fill_holes()
     if decimate:
@@ -40,5 +39,3 @@ def get_pointcloud_from_mesh(mesh_obj: vedo.Mesh,label,label_name='scalars'):
     point_cloud:np.ndarray = mesh_obj.clone(transformed=True).points()
     point_labels:np.ndarray = mesh_obj.pointdata[label_name]
     return vedo.Points(point_cloud[point_labels==label])
-
-``

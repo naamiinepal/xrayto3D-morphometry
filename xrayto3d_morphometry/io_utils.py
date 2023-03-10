@@ -2,6 +2,12 @@ import SimpleITK as sitk
 from pathlib import Path
 import os 
 import vedo
+import pandas as pd
+from typing import Optional,List,Dict
+
+def write_csv(data: Dict[str,List], file_path, column_names: Optional[List[str]]=None):
+    pd.DataFrame.from_dict(data,orient='index',columns=column_names).to_csv(file_path,header=True,float_format="%.2f")
+
 
 def read_mesh(mesh_path:str)->vedo.Mesh:
     return vedo.load(mesh_path)

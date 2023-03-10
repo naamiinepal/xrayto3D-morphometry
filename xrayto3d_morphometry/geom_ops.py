@@ -2,6 +2,8 @@ import numpy as np
 from vtkmodules.all import vtkMath,vtkLine
 from typing import Sequence
 
+"""thin wrapper around vtkMath"""
+
 def get_distance_between_points(p1:Sequence[float],p2:Sequence[float]):
     """return euclidean distance between points"""
     return np.sqrt(vtkMath.Distance2BetweenPoints(p1,p2))
@@ -20,3 +22,7 @@ def get_vector_from_points(p1,p2):
     v = np.subtract(p2,p1)
     v_norm = vtkMath.Norm(v)
     return v / v_norm
+
+def lerp(p0: Sequence[float],p1: Sequence[float],alpha: float):
+    """linear interpolation"""
+    return tuple( a*alpha + b*(1.0 - alpha) for a,b in zip(p0,p1)) 

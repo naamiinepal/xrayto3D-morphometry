@@ -36,11 +36,14 @@ def test_point_data():
     sample_mesh.print()
     vedo.show(sample_mesh.opacity(0.5),point_cloud)
 
-
+def test_camera_orientation():
+    sample_mesh = read_mesh('test_data/s0000_femur_left_msk_detailed_4class.vtk')
+    vedo.show(sample_mesh,resetcam=False,camera=get_oriented_camera(sample_mesh,axis=2,camera_dist=400),axes=1)
 
 if __name__ == '__main__':
     # test_move_to_origin()
     # test_get_furthest_point()
     # test_get_principal_axis()
     # test_point_data()
+    test_camera_orientation()
     pass

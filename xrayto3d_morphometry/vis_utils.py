@@ -4,6 +4,9 @@ from typing import List
 def get_oriented_camera(mesh_obj:vedo.Mesh,axis,camera_dist=200):
     """return a camera dict with 
     focal point: mesh_obj center of mass
+    camera_position at distance camera_dist from focal_point
+    and oriented along CT coordinate system.
+    The view-up vector was empirically determined to obtain sagittal, transverse and anteroposterior views from the camera.
     """
     x0,x1,y0,y1,z0,z1 = mesh_obj.bounds()
     focal_point = mesh_obj.center_of_mass()
@@ -23,13 +26,13 @@ def get_oriented_camera(mesh_obj:vedo.Mesh,axis,camera_dist=200):
     }
 
 
-def get_custom_axes(center, axis1,axis2,axis3,scale=20) ->List[vedo.Mesh]:
+def get_direction_axes(center, axis1,axis2,axis3,scale=20) ->List[vedo.Mesh]:
     a = vedo.Arrow(center,center + axis1*scale,c='r')
     b = vedo.Arrow(center,center + axis2*scale,c='g')
     c = vedo.Arrow(center,center + axis3*scale,c='b')
     return [a,b,c]
 
-def get_custom_axes_from_ellipsoid(ellipsoid:vedo.Ellipsoid)-> List[vedo.Mesh]:
-    return get_custom_axes(ellipsoid.center,ellipsoid.axis1,
+def get_direction_axes_from_ellipsoid(ellipsoid:vedo.Ellipsoid)-> List[vedo.Mesh]:
+    return get_direction_axes(ellipsoid.center,ellipsoid.axis1,
                            ellipsoid.axis2,
                            ellipsoid.axis3)

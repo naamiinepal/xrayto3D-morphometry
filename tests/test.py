@@ -27,7 +27,7 @@ def test_get_furthest_point():
 def test_get_principal_axis():
     sample_mesh = vedo.Box((0,0,0),10,20,30).rotate_x(45)
     axes_matrix, ellipsoid = get_principal_axis(sample_mesh)
-    axes_actor = get_custom_axes_from_ellipsoid(ellipsoid)
+    axes_actor = get_direction_axes_from_ellipsoid(ellipsoid)
     vedo.show(axes_actor,sample_mesh.opacity(0.5))
 
 def test_point_data():

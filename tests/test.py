@@ -30,7 +30,14 @@ def test_get_principal_axis():
     axes_actor = get_custom_axes_from_ellipsoid(ellipsoid)
     vedo.show(axes_actor,sample_mesh.opacity(0.5))
 
+def test_point_data():
+    sample_mesh = read_mesh('test_data/s0000_femur_left_msk_detailed_4class.vtk')
+    point_cloud = get_pointcloud_from_mesh(sample_mesh,3)
+    sample_mesh.print()
+    vedo.show(sample_mesh.opacity(0.5),point_cloud)
+
 if __name__ == '__main__':
     # test_move_to_origin()
     # test_get_furthest_point()
-    test_get_principal_axis()
+    # test_get_principal_axis()
+    test_point_data()

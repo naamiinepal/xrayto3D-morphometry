@@ -41,3 +41,9 @@ def get_mesh_from_segmentation(filename:str,largest_component=True,flying_edges=
 def move_to_origin(mesh_obj: vedo.Mesh):
     """changes the original mesh so that its center of mass lies at (0,0,0)"""
     return mesh_obj.shift(*-mesh_obj.center_of_mass())
+
+def get_pointcloud_from_mesh(mesh_obj: vedo.Mesh,label,label_name='scalars'):
+    """get mesh vertices with specific labels"""
+    point_cloud:np.ndarray = mesh_obj.clone(transformed=True).points()
+    point_labels:np.ndarray = mesh_obj.pointdata[label_name]
+    return vedo.Points(point_cloud[point_labels==label])

@@ -13,6 +13,7 @@ def get_angle_between_vectors(v1,v2,degrees=True):
     return angle
 
 def get_vector_from_points(p1,p2):
-    v = np.subtract(p1,p2)
+    """return a vector pointing from p1 to p2 (not p2 to p1, order(direction) is important in vectors)"""
+    v = np.subtract(p2,p1)
     v_norm = vtkMath.Norm(v)
     return v / v_norm

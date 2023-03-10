@@ -1,5 +1,6 @@
 from xrayto3d_morphometry import *
 import vedo
+import numpy as np
 
 def test_geom_ops():
     dist = get_distance_between_points((1,1,1),(1,1,10))
@@ -17,6 +18,10 @@ def test_geom_ops():
     angle = get_angle_between_vectors((1,0,0),(-1,0,0))
     expected_angle = 180
     assert abs(angle-expected_angle) < 1e-5, f'Error:get_angle_between_vectors {angle:.2f}'
+
+    v = get_vector_from_points((1,0,0),(20,0,0))
+    expected_v = np.asarray([1.,0.,0.])
+    np.testing.assert_allclose(v,expected_v)
 
 if __name__ == '__main__':
     test_geom_ops()

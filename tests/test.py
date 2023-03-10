@@ -13,15 +13,24 @@ def test_move_to_origin():
 
 def test_get_furthest_point():
     sample_mesh = read_sample_mesh()
+    move_to_origin(sample_mesh)
     p0,p0_idx = get_furthest_point_along_axis(sample_mesh.points(),0)
     p1,p1_idx = get_furthest_point_along_axis(sample_mesh.points(),1)
     p2,p2_idx = get_furthest_point_along_axis(sample_mesh.points(),2)
     p2_neg,p2_neg_idx = get_furthest_point_along_axis(sample_mesh.points(),2,True)
+
+    p3,p3_idx = get_farthest_point_from_line_segment(sample_mesh.points(),(0,-100,0),(0,100,0))
+    p4,p4_idx = get_closest_point_to_plane(sample_mesh,(0,1,0))
+
     vedo.show(sample_mesh,
               vedo.Point(p0),
               vedo.Point(p1),
               vedo.Point(p2),
               vedo.Point(p2_neg),
+              vedo.Point(p3).c('blue'),
+              vedo.Line((0,-100,0),(0,100,0)),
+              vedo.Plane(normal=(0,1,0)),
+              vedo.Point(p4).c('blue'),
               axes=1)
 
 def test_get_principal_axis():
@@ -42,8 +51,8 @@ def test_camera_orientation():
 
 if __name__ == '__main__':
     # test_move_to_origin()
-    # test_get_furthest_point()
+    test_get_furthest_point()
     # test_get_principal_axis()
     # test_point_data()
-    test_camera_orientation()
+    # test_camera_orientation()
     pass

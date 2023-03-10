@@ -1,6 +1,6 @@
 import vedo
 import numpy as np
-from typing import Tuple,List
+from typing import Tuple,List,Union,Sequence
 import SimpleITK as sitk
 
 def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
@@ -47,3 +47,16 @@ def get_pointcloud_from_mesh(mesh_obj: vedo.Mesh,label,label_name='scalars'):
     point_cloud:np.ndarray = mesh_obj.clone(transformed=True).points()
     point_labels:np.ndarray = mesh_obj.pointdata[label_name]
     return vedo.Points(point_cloud[point_labels==label])
+
+def get_closest_point_to_plane(mesh_obj: vedo.Mesh,plane:Union[vedo.Plane,Sequence[float]]):
+    return get_extrema_to_plane(mesh_obj,plane,apply_fn=np.argmin)
+
+def get_farthest_point_to_plane(mesh_obj: vedo.Mesh,plane:Union[vedo.Plane,Sequence[float]]):
+    return get_extrema_to_plane(mesh_obj,plane,apply_fn=np.argmax)
+
+def get_extrema_to_plane(mesh_obj: vedo.Mesh,plane:Union[vedo.Plane,Sequence[float]],apply_fn):
+    if isinstance(plane,Sequence):                       
+        plane = vedo.Plane(normal=plane)
+    mesh_obj.distance_to(plane)
+    candidate_point_idx = apply_fn(mesh_obj.pointdata['Distance'])
+    return mesh_obj.points()[candidate_point_idx],candidate_point_idx

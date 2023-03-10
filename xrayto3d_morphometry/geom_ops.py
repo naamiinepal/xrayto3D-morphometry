@@ -1,5 +1,5 @@
 import numpy as np
-from vtkmodules.all import vtkMath
+from vtkmodules.all import vtkMath,vtkLine
 from typing import Sequence
 
 def get_distance_between_points(p1:Sequence[float],p2:Sequence[float]):
@@ -17,3 +17,9 @@ def get_vector_from_points(p1,p2):
     v = np.subtract(p2,p1)
     v_norm = vtkMath.Norm(v)
     return v / v_norm
+
+def get_farthest_point_from_line_segment(points:np.ndarray,line_p0:Sequence[float],line_p1:Sequence[float]):
+    """return the point farthest from line segment represented by start and end point"""
+    distance_to_line = [vtkLine.DistanceToLine(p,line_p0,line_p1) for p in points]
+    candidate_point_idx = np.argmax(distance_to_line)
+    return points[np.argmax(distance_to_line)],candidate_point_idx

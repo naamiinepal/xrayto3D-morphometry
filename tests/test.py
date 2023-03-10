@@ -36,8 +36,11 @@ def test_point_data():
     sample_mesh.print()
     vedo.show(sample_mesh.opacity(0.5),point_cloud)
 
+
+
 if __name__ == '__main__':
     # test_move_to_origin()
     # test_get_furthest_point()
     # test_get_principal_axis()
-    test_point_data()
+    # test_point_data()
+    pass

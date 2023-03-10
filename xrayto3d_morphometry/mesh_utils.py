@@ -39,4 +39,5 @@ def get_mesh_from_segmentation(filename:str,largest_component=True,flying_edges=
     return mesh_obj
 
 def move_to_origin(mesh_obj: vedo.Mesh):
+    """changes the original mesh so that its center of mass lies at (0,0,0)"""
     return mesh_obj.shift(*-mesh_obj.center_of_mass())

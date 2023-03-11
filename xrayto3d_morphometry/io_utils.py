@@ -3,6 +3,7 @@ from pathlib import Path
 import os 
 import vedo
 import pandas as pd
+import shutil
 from typing import Optional,List,Dict
 
 def write_csv(data: Dict[str,List], file_path, column_names: Optional[List[str]]=None):
@@ -34,3 +35,9 @@ def get_nifti_stem(path):
         return '.'.join(name_subparts[:-2]) # get rid of nii.gz
     if isinstance(path, (str, os.PathLike)):
         return _get_stem(path)
+
+def get_files_from_run_id(run_id:str,suffix_regex:str)-> List[Path]:
+    files = sorted(list(Path(f'2d-3d-benchmark/{run_id}/evaluation').glob(suffix_regex)))
+
+
+    return files

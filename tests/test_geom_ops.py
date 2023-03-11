@@ -23,5 +23,9 @@ def test_geom_ops():
     expected_v = np.asarray([1.,0.,0.])
     np.testing.assert_allclose(v,expected_v)
 
+    v = get_closest_point_from_line((5,5,5),(0,1,0),(0,10,0))
+    expected_v = np.asarray([0,5,0],dtype=np.float32)
+    np.testing.assert_allclose(v,expected_v)
+
 if __name__ == '__main__':
     test_geom_ops()

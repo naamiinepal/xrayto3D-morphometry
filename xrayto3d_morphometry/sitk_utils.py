@@ -10,7 +10,7 @@ def get_segmentation_stats(segmentation: sitk.Image)->sitk.LabelShapeStatisticsI
     fltr:sitk.LabelShapeStatisticsImageFilter = sitk.LabelShapeStatisticsImageFilter()
     fltr.ComputeOrientedBoundingBoxOn()
     fltr.ComputeFeretDiameterOn()
-    fltr.Execute(segmentation)
+    fltr.Execute(sitk.Cast(segmentation,sitk.sitkUInt8))
     return fltr
 
 def change_label(img: sitk.Image, mapping_dict) -> sitk.Image:

@@ -19,6 +19,12 @@ def grid_search_candidate_cut_plane(mesh_obj: vedo.Mesh, init_plane_origin:Seque
                                              plane_normal=candidate_cut_plane_normal,
                                              plane_origin=init_plane_origin)
                 if csa <= smallest_csarea:
+                    # additional sanity check: is the cut plane actually circular
+                    # Cross section consistency check:
+                    #1. Circular fitting
+                    # boundary_points = mesh_obj.clone().cut_with_plane(origin=init_plane_origin,normal=candidate_cut_plane_normal).boundaries().points()
+                    # c,R,n = vedo.fit_circle(boundary_points)
+                    
                     if verbose:
                         print(f'found better candidate with cs-area {csa:.3f}')
                     smallest_csarea = csa

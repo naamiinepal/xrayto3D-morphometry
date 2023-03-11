@@ -4,7 +4,7 @@ import numpy as np
 def process_femur(nifti_filename,offscreen=False,screenshot_out_dir='.'):
     mesh_obj = get_mesh_from_segmentation(nifti_filename,largest_component=False)
 
-    label_dict = {'head':1,'neck':2,'intra_troc':3,'sub_troc':4}
+    label_dict = {'head':4,'neck':3,'sub_troc':2}
     subtroc_mesh = extract_volume_surface(get_segmentation_volume(nifti_filename,label_dict['sub_troc']))
     # diaphysis axis
     diaphysis_com = vedo.Point(subtroc_mesh.center_of_mass())
@@ -57,8 +57,8 @@ def process_femur(nifti_filename,offscreen=False,screenshot_out_dir='.'):
 
 
 if __name__ == '__main__':
-    process_femur(nifti_filename='test_data/s0000_femur_left_msk_detailed_4class.nii.gz',offscreen=False,screenshot_out_dir='test_data')
-
+    # process_femur(nifti_filename='test_data/s0000_femur_left_msk_detailed_4class.nii.gz',offscreen=False,screenshot_out_dir='test_data')
+    process_femur(nifti_filename='femur_manual_cut_plane/s0104_femur_left_msk_gt.nii.gz',offscreen=False,screenshot_out_dir='test_data')
     # run_id = 'ceio7qj7'
     # # remove old visualizations
     # if Path(f'2d-3d-benchmark/{run_id}/visualization_v2').exists():

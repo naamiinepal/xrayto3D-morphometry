@@ -4,7 +4,7 @@ import vedo
 def process_femur_heuristics(nifti_filename):
     mesh_obj = get_mesh_from_segmentation(nifti_filename,largest_component=True)
 
-    label_dict = {'head':1,'neck':2,'intra_troc':3,'sub_troc':4}
+    label_dict = {'head':4,'neck':3,'sub_troc':2}
     subtroc_mesh = extract_volume_surface(get_segmentation_volume(nifti_filename,label_dict['sub_troc']))
     # diaphysis axis
     diaphysis_com = vedo.Point(subtroc_mesh.center_of_mass())
@@ -41,8 +41,11 @@ def process_femur_heuristics(nifti_filename):
             sphere_points.extend(hc.points().tolist())
         else:
             break
-    head_sph:vedo.Sphere = vedo.fit_sphere(sphere_points)
-
+    try:
+        head_sph:vedo.Sphere = vedo.fit_sphere(sphere_points)
+    except ValueError as e:
+        print(nifti_filename,'ERROR',e)
+        
     # fit femoral neck
     # initial femoral neck axis
     init_fna_line = vedo.Line(head_sph.center,p_m)
@@ -73,4 +76,9 @@ def process_femur_heuristics(nifti_filename):
     )
 
 if __name__ == '__main__':
-    process_femur_heuristics('test_data/s0000_femur_left_msk_detailed_4class.nii.gz')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('nifti_file')
+    args = parser.parse_args()
+
+    process_femur_heuristics(args.nifti_file)

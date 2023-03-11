@@ -6,7 +6,7 @@
 from vedo import Volume
 
 
-def extract_volume_surface(vol, value, smooth=False):
+def extract_volume_surface(vol, value=1.0, smooth=False):
     """ 
         Returns a vedo mesh actor with just the outer surface of a volume
 
@@ -20,7 +20,7 @@ def extract_volume_surface(vol, value, smooth=False):
             f"vol argument should be an instance of Volume not {type(vol)}"
         )
 
-    mesh = vol.isosurface(value=value).cap()
+    mesh = vol.isosurface(value=value)
 
     if smooth:
         mesh.smoothLaplacian()

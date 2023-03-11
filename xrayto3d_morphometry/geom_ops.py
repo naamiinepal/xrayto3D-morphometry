@@ -28,8 +28,12 @@ def lerp(p0: Sequence[float],p1: Sequence[float],alpha: float):
     """linear interpolation"""
     return tuple( a*alpha + b*(1.0 - alpha) for a,b in zip(p0,p1)) 
 
-def get_points_along_directions(point:Sequence[float],direction:Sequence[float],num_points:int=6):
+def get_points_along_directions(point:Sequence[float],direction:Sequence[float],num_points:int=6,positive_only=False):
     candidate_points = []
-    for i in np.linspace(-num_points//2,num_points//2,num_points):
-        candidate_points.append(add_tuple(point,multiply_tuple_scalar(direction,i)))
+    if positive_only:
+        for i in np.linspace(0,num_points,num_points):
+            candidate_points.append(add_tuple(point,multiply_tuple_scalar(direction,i)))
+    else:
+        for i in np.linspace(-num_points//2,num_points//2,num_points):
+            candidate_points.append(add_tuple(point,multiply_tuple_scalar(direction,i)))
     return candidate_points

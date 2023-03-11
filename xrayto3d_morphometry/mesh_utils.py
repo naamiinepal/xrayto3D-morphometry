@@ -2,6 +2,7 @@ import vedo
 import numpy as np
 from typing import Tuple,List,Union,Sequence
 import SimpleITK as sitk
+from .sitk_utils import make_isotropic,get_segmentation_labels
 
 def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
     mesh_axes:vedo.Ellipsoid = vedo.pca_ellipsoid(mesh_obj.points())
@@ -13,9 +14,19 @@ def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
     return T,mesh_axes
 
 
-def get_mesh_from_segmentation(filename:str,largest_component=True,flying_edges=True,decimate=False,decimation_ratio=1.0)->vedo.Mesh:
-    sitk_volume = sitk.ReadImage(filename)
+def get_mesh_from_segmentation(filename:str,largest_component=False,flying_edges=True,decimate=False,decimation_ratio=1.0,isosurface_value=1.0)->vedo.Mesh:
+    np_volume = get_volume(filename, largest_component)
     
+    # isosurface_values = get_segmentation_labels(sitk_volume)
+    mesh_obj:vedo.Mesh = np_volume.isosurface(value=isosurface_value-0.1,flying_edges=flying_edges)
+    mesh_obj = mesh_obj.fill_holes()
+    if decimate:
+        mesh_obj = mesh_obj.decimate(fraction=decimation_ratio)
+    return mesh_obj.cap()
+
+def get_volume(filename, largest_component=False)->vedo.Volume:
+    sitk_volume = sitk.ReadImage(filename)
+
     if largest_component:
         # get largest connected component
         sitk_volume = sitk.RelabelComponent(sitk.ConnectedComponent(
@@ -23,12 +34,8 @@ def get_mesh_from_segmentation(filename:str,largest_component=True,flying_edges=
             ),sortByObjectSize=True) == 1
     
     np_volume = vedo.Volume(sitk.GetArrayFromImage(sitk_volume))
-    
-    mesh_obj:vedo.Mesh = np_volume.isosurface(flying_edges=flying_edges)
-    mesh_obj = mesh_obj.fill_holes()
-    if decimate:
-        mesh_obj = mesh_obj.decimate(fraction=decimation_ratio)
-    return mesh_obj
+    return np_volume
+
 
 def move_to_origin(mesh_obj: vedo.Mesh):
     """changes the original mesh so that its center of mass lies at (0,0,0)"""

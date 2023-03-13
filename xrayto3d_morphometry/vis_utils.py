@@ -15,7 +15,7 @@ def get_oriented_camera(mesh_obj:vedo.Mesh,axis,camera_dist=200):
     position = list(focal_point).copy()
     position[axis] += camera_dist
     
-    distance = camera_dist
+    distance = abs(camera_dist)
     clipping_range = (x0,x1) if axis == 0 else (y0,y1) if axis == 1 else (z0,z1) 
     viewup = (0,-1,0) if axis == 2 else (0,0,1) if axis == 1 else (0,0,1)
     return {

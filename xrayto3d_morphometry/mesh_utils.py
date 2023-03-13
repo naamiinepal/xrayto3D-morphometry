@@ -2,7 +2,6 @@ import vedo
 import numpy as np
 from typing import Tuple,List,Union,Sequence
 import SimpleITK as sitk
-from .sitk_utils import make_isotropic,get_segmentation_labels
 
 def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
     mesh_axes:vedo.Ellipsoid = vedo.pca_ellipsoid(mesh_obj.points())
@@ -13,7 +12,12 @@ def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
     T = np.array([ax1,ax2,ax3])
     return T,mesh_axes
 
+def align_along_principal_axes(mesh_obj)->Tuple[vedo.Mesh,np.ndarray]:
+    T,mesh_axis = get_principal_axis(mesh_obj)
+    aligned_mesh_obj = mesh_obj.clone(transformed=True).apply_transform(T)
 
+    return aligned_mesh_obj,T
+    
 def get_mesh_from_segmentation(filename:str,largest_component=False,flying_edges=True,decimate=False,decimation_ratio=1.0,isosurface_value=1.0)->vedo.Mesh:
     np_volume = get_volume(filename, largest_component)
     

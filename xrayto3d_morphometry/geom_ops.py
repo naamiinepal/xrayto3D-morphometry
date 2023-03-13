@@ -1,6 +1,6 @@
 import numpy as np
 from vtkmodules.all import vtkMath,vtkLine
-from typing import Sequence
+from typing import Sequence, Tuple
 from .tuple_ops import *
 
 """thin wrapper around vtkMath"""

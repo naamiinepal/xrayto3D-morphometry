@@ -1,8 +1,28 @@
 from .geom_ops import get_distance_to_line_segment
 import vedo
-from typing import Union,Sequence
+from typing import Union,Sequence,List
 import numpy as np
 from .tuple_ops import subtract_tuple,multiply_tuple_scalar,add_tuple
+from .geom_ops import get_distance_between_points
+
+from point_cloud_utils import chamfer_distance
+def get_closest_points_between_point_clouds(p0:List[Sequence[float]],p1:List[Sequence[float]]):
+    d, corr_p0_to_p1, corr_p1_to_p0 = chamfer_distance(p0,p1,return_index=True)
+    print(d,corr_p0_to_p1,corr_p1_to_p0)
+
+def brute_force_search_get_closest_points_between_point_clouds(p0:List[Sequence[float]],p1:List[Sequence[float]]):
+    mi = get_distance_between_points(p0[0], p1[0])
+    p1_candidate = p0[0]
+    p2_candidate = p1[0]
+    ln_p0 = len(p0)
+    ln_p1 = len(p1)
+    for i in range(ln_p0):
+        for j in range(ln_p1):
+                d = get_distance_between_points(p0[i], p1[j])
+                if d < mi:  # Update min_dist and points
+                    mi = d
+                    p1_candidate, p2_candidate = p0[i], p1[j]
+    return p1_candidate, p2_candidate, mi
 
 def get_closest_point_from_line(p0:Sequence[float],line_p0: Sequence[float],line_p1: Sequence[float]):
     line_p0_numpy = np.asarray(line_p0,dtype=np.float32)

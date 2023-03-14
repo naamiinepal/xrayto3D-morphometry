@@ -1,5 +1,5 @@
 from .distances import get_farthest_point_along_axis
-from .geom_ops import lerp
+from .geom_ops import lerp,get_vector_from_points
 import vedo
 import numpy as np
 
@@ -32,9 +32,17 @@ def get_psis_estimate(hip_mesh_obj,transverse_plane_pos, transverse_axis_normal=
     top_right_mesh:vedo.Mesh = hip_mesh_obj.clone(transformed=True).cut_with_plane(normal=sagittal_axis_normal,invert=True).cut_with_plane(normal=transverse_axis_normal,invert=True,origin=transverse_plane_pos)    
     psis_p1 = vedo.Point(get_farthest_point_along_axis(top_left_mesh.points(),axis=2,negative=True)[0])
     psis_p2 = vedo.Point(get_farthest_point_along_axis(top_right_mesh.points(),axis=2,negative=True)[0])
-    return [psis_p1,psis_p2]
+    #  Get the most superior point (MSP) of each hip bone    
+    msp_p1 = vedo.Point(get_farthest_point_along_axis(top_right_mesh.points(),axis=1,negative=True)[0])
+    msp_p2 = vedo.Point(get_farthest_point_along_axis(top_left_mesh.points(),axis=1,negative=True)[0])    
+    # Sanity check PSIS vector: The vector connecting the PSIS points
+    # Maximal absolute value of the z-component of the PSIS vector
+    MAX_Z_COMPONENT =0.11;
+    PSIS_vec = get_vector_from_points(psis_p1.GetPosition(),psis_p2.GetPosition())
+    # print(PSIS_vec)
+    return [psis_p1,psis_p2,msp_p1,msp_p2,top_left_mesh,top_right_mesh]
 
-def get_posterior_point_ischial(hip_mesh_obj,ps_height,app_height,transverse_axis_normal=(0,1,0),sagittal_plane_pos=(0,0,0),sagittal_plane_normal=(1,0,0)):
+def get_ischial_mesh_cut(hip_mesh_obj,ps_height,app_height,transverse_axis_normal=(0,1,0),sagittal_plane_pos=(0,0,0),sagittal_plane_normal=(1,0,0)):
     left:vedo.Mesh = hip_mesh_obj.clone(transformed=True).cut_with_plane(origin=(0,ps_height,0),normal=transverse_axis_normal,invert=True).cut_with_plane(origin=(0,app_height,0),normal=transverse_axis_normal).cut_with_plane(origin=sagittal_plane_pos,normal=sagittal_plane_normal)
     left_largest = left.extract_largest_region() # remove parts of sacrum 
 

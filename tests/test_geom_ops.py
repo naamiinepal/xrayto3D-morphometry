@@ -27,5 +27,8 @@ def test_geom_ops():
     expected_v = np.asarray([0,5,0],dtype=np.float32)
     np.testing.assert_allclose(v,expected_v)
 
+    v = get_distance_to_line_segment((1,0,0),(10,0,0),(10,10,0))
+    assert abs(v - 9.0) < 1e-5, f'Error:get_distance_to_line_segment expected 9.0 got {v:.2f}'
+
 if __name__ == '__main__':
     test_geom_ops()

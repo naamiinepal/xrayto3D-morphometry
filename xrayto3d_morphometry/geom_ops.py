@@ -9,8 +9,11 @@ def get_distance_between_points(p1:Sequence[float],p2:Sequence[float]):
     """return euclidean distance between points"""
     return np.sqrt(vtkMath.Distance2BetweenPoints(p1,p2))
 
-def get_distance_to_line_segment(p0:Sequence[float],line_p0:Sequence[float],line_p1:Sequence[float]):
+def get_distance2_to_line_segment(p0:Sequence[float],line_p0:Sequence[float],line_p1:Sequence[float]):
     return vtkLine.DistanceToLine(p0,line_p0,line_p1) 
+
+def get_distance_to_line_segment(p0:Sequence[float],line_p0: Sequence[float],line_p1: Sequence[float]):
+    return np.sqrt(get_distance2_to_line_segment(p0,line_p0,line_p1))
 
 def get_angle_between_vectors(v1,v2,degrees=True):
     angle = vtkMath.AngleBetweenVectors(v1,v2)

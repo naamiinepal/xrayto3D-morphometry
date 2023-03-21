@@ -2,6 +2,7 @@ import vedo
 import numpy as np
 from typing import Tuple,List,Union,Sequence
 import SimpleITK as sitk
+from .sitk_utils import make_isotropic
 
 def get_principal_axis(mesh_obj:vedo.Mesh) -> Tuple[np.ndarray,vedo.Ellipsoid]:
     mesh_axes:vedo.Ellipsoid = vedo.pca_ellipsoid(mesh_obj.points())
@@ -28,7 +29,7 @@ def get_mesh_from_segmentation(filename:str,largest_component=False,flying_edges
         mesh_obj = mesh_obj.decimate(fraction=decimation_ratio)
     return mesh_obj.cap()
 
-def get_volume(filename, largest_component=False)->vedo.Volume:
+def get_volume(filename, largest_component=False,isotropic=True)->vedo.Volume:
     sitk_volume = sitk.ReadImage(filename)
 
     if largest_component:
@@ -36,7 +37,8 @@ def get_volume(filename, largest_component=False)->vedo.Volume:
         sitk_volume = sitk.RelabelComponent(sitk.ConnectedComponent(
             sitk.Cast(sitk_volume,sitk.sitkUInt8),
             ),sortByObjectSize=True) == 1
-    
+    if isotropic:
+        sitk_volume = make_isotropic(sitk_volume,1.0)
     np_volume = vedo.Volume(sitk.GetArrayFromImage(sitk_volume))
     return np_volume
 

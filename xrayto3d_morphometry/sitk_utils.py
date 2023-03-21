@@ -19,8 +19,10 @@ def change_label(img: sitk.Image, mapping_dict) -> sitk.Image:
     fltr.SetChangeMap(mapping_dict)
     return fltr.Execute(sitk.Cast(img,sitk.sitkUInt8))
 
-def get_segmentation_volume(filename,label_id,largest_component=False):
+def get_segmentation_volume(filename,label_id,largest_component=False,isotropic=True):
     sitk_volume = sitk.ReadImage(filename)
+    if isotropic:
+        sitk_volume = make_isotropic(sitk_volume,spacing=1.0) 
     labels = get_segmentation_labels(sitk_volume)
 
     # get segmentation volume with specific label id 

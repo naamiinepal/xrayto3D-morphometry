@@ -1,48 +1,54 @@
+from typing import Optional
+
 import SimpleITK as sitk
-from typing import Sequence, Optional
 import vedo
 
-def get_segmentation_labels(segmentation:sitk.Image):
+
+def get_segmentation_labels(segmentation: sitk.Image):
     fltr = get_segmentation_stats(segmentation)
     return fltr.GetLabels()
 
-def get_segmentation_stats(segmentation: sitk.Image)->sitk.LabelShapeStatisticsImageFilter:
-    fltr:sitk.LabelShapeStatisticsImageFilter = sitk.LabelShapeStatisticsImageFilter()
+
+def get_segmentation_stats(segmentation: sitk.Image) -> sitk.LabelShapeStatisticsImageFilter:
+    fltr: sitk.LabelShapeStatisticsImageFilter = sitk.LabelShapeStatisticsImageFilter()
     fltr.ComputeOrientedBoundingBoxOn()
     fltr.ComputeFeretDiameterOn()
-    fltr.Execute(sitk.Cast(segmentation,sitk.sitkUInt8))
+    fltr.Execute(sitk.Cast(segmentation, sitk.sitkUInt8))
     return fltr
+
 
 def change_label(img: sitk.Image, mapping_dict) -> sitk.Image:
     """use SimplITK AggregateLabelMapFilter to merge all segmentation labels to first label. This is used to obtain the bounding box of all the labels """
     fltr = sitk.ChangeLabelImageFilter()
     fltr.SetChangeMap(mapping_dict)
-    return fltr.Execute(sitk.Cast(img,sitk.sitkUInt8))
+    return fltr.Execute(sitk.Cast(img, sitk.sitkUInt8))
 
-def get_segmentation_volume(filename,label_id,largest_component=False,isotropic=True):
+
+def get_segmentation_volume(filename, label_id, largest_component=False, isotropic=True):
     sitk_volume = sitk.ReadImage(filename)
     if isotropic:
-        sitk_volume = make_isotropic(sitk_volume,spacing=1.0) 
+        sitk_volume = make_isotropic(sitk_volume, spacing=1.0)
     labels = get_segmentation_labels(sitk_volume)
 
-    # get segmentation volume with specific label id 
+    # get segmentation volume with specific label id
     change_map_dict = {}
-    for  l in labels:
+    for l in labels:
         if l == label_id:
             change_map_dict[l] = 1
         else:
             change_map_dict[l] = 0
-    sitk_volume = change_label(sitk_volume,change_map_dict)  
+    sitk_volume = change_label(sitk_volume, change_map_dict)
 
     if largest_component:
         # get largest connected component
         sitk_volume = sitk.RelabelComponent(sitk.ConnectedComponent(
-            sitk.Cast(sitk_volume,sitk.sitkUInt8),
-            ),sortByObjectSize=True) == 1
-              
+            sitk.Cast(sitk_volume, sitk.sitkUInt8),
+        ), sortByObjectSize=True) == 1
+
     return vedo.Volume(sitk.GetArrayFromImage(sitk_volume))
 
-def make_isotropic(img: sitk.Image, spacing:Optional[float]=None, interpolator= sitk.sitkNearestNeighbor):
+
+def make_isotropic(img: sitk.Image, spacing: Optional[float] = None, interpolator=sitk.sitkNearestNeighbor):
     '''
     Resample `img` so that the voxel is isotropic with given physical spacing
     The image volume is shrunk or expanded as necessary to represent the same physical space. 
@@ -53,7 +59,6 @@ def make_isotropic(img: sitk.Image, spacing:Optional[float]=None, interpolator= 
 
     if spacing is None:
         spacing = min(list(img.GetSpacing()))
-
 
     resampler = sitk.ResampleImageFilter()
     new_size = [round(old_size * old_spacing / spacing)

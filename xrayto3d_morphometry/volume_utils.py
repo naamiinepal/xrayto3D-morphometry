@@ -1,7 +1,8 @@
-# original code: https://github.com/brainglobe/brainrender/blob/90b841c48358f09ec8c0fa4f6705e01e4a7c0ac1/brainrender/Utils/volume.py
 
 """
-    Code useful for dealing with volumetric data (e.g. allen annotation volume for the mouse atlas)
+    Code useful for dealing with volumetric data 
+    original code: https://github.com/brainglobe/brainrender/blob/90b841c48358f09ec8c0fa4f6705e01e4a7c0ac1/brainrender/Utils/volume.py
+
 """
 from vedo import Volume
 

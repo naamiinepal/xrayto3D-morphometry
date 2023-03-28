@@ -36,8 +36,7 @@ def get_nifti_stem(path):
     def _get_stem(path_string) -> str:
         name_subparts = Path(path_string).name.split('.')
         return '.'.join(name_subparts[:-2])  # get rid of nii.gz
-    if isinstance(path, (str, os.PathLike)):
-        return _get_stem(path)
+    return _get_stem(path)
 
 
 def get_files_from_run_id(run_id: str, suffix_regex: str) -> List[Path]:

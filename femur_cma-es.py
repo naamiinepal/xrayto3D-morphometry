@@ -1,6 +1,9 @@
 """obtain femur morphometry using Covariance Matrix Adaption Evolutionary Strategy"""
 from pathlib import Path
+import csv
+import argparse
 
+from tqdm import tqdm
 import numpy as np
 import vedo
 
@@ -227,7 +230,6 @@ def get_femur_morphometry(
 
 def test_single():
     """test single sample"""
-    import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("nifti_file")
@@ -245,9 +247,6 @@ def test_single():
 
 def process_dir():
     """process all files in a directory"""
-    import csv
-
-    from tqdm import tqdm
 
     filenames = list(Path("femur_manual_cut_plane").glob("*.nii.gz"))
     print(f"processing {len(filenames)} files")

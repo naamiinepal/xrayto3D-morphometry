@@ -1,5 +1,9 @@
+"""obtain femur morphometry for model prediction"""
 from pathlib import Path
+import argparse
+import csv
 
+from tqdm import tqdm
 import numpy as np
 import vedo
 
@@ -250,11 +254,6 @@ def get_predictions_from_run_id(run_id: str, ground_truth_nifti_file):
 
 
 def process_dir():
-    import argparse
-    import csv
-
-    from tqdm import tqdm
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--run_id")
     parser.add_argument("--robust", default=False, action="store_true")
@@ -305,8 +304,6 @@ def process_dir():
 
 
 def test_single():
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument("nifti_file")
     parser.add_argument("--robust", default=False, action="store_true")

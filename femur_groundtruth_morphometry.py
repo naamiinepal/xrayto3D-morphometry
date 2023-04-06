@@ -6,35 +6,15 @@ from multiprocessing import Pool
 from pathlib import Path
 
 from xrayto3d_morphometry import (
-    extract_volume_surface,
-    femur_label_dict,
     get_femur_morphometry,
     get_nifti_stem,
-    get_segmentation_labels,
-    get_segmentation_volume,
-    read_volume,
+    get_subtrochanter_center,
+    seg_contain_subtrochanter,
 )
 
 FEMUR_MANUAL_CUT_PLANE_DIR = (
     "2D-3D-Reconstruction-Datasets/morphometry/femur_manual_cut_plane"
 )
-
-
-def get_subtrochanter_center(nifti_filename):
-    """assume subtrochanter segmenetation exists"""
-    subtroch_mesh = extract_volume_surface(
-        get_segmentation_volume(nifti_filename, femur_label_dict["sub_troc"])
-    )
-    return subtroch_mesh.center_of_mass()
-
-
-def seg_contain_subtrochanter(nifti_filename) -> bool:
-    """return True if the nifti segmentation contains subtrochanter
-    region label
-    """
-    seg_vol = read_volume(nifti_filename)
-    label_indexes = get_segmentation_labels(seg_vol)
-    return femur_label_dict["sub_troc"] in label_indexes
 
 
 def get_metric_formatted_row(nifti_file, metrics_dict):

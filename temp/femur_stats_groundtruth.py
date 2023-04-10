@@ -1,14 +1,21 @@
+"""given nifti segmentation directory, obtain femur morphometry provided 
+subtrochanter segmentation is available
+Uses: grid search
+"""
+import argparse
+import csv
 from pathlib import Path
 
 import numpy as np
 import vedo
-
+from tqdm import tqdm
 from xrayto3d_morphometry import (
     extract_volume_surface,
     get_angle_between_vectors,
     get_arrow_actor,
     get_closest_point_from_line,
     get_distance_to_line_segment,
+    get_farthest_point_from_line_segment,
     get_line_segment,
     get_mesh_from_segmentation,
     get_nifti_stem,
@@ -16,8 +23,8 @@ from xrayto3d_morphometry import (
     get_segmentation_volume,
     get_vector_from_points,
     grid_search_candidate_cut_plane,
-    get_farthest_point_from_line_segment,
     lerp,
+    femur_label_dict,
 )
 
 
@@ -27,12 +34,12 @@ def get_femur_morphometry(
     screenshot=True,
     offscreen=True,
     screenshot_out_dir=".",
-):
+) -> dict:
+    """given nifti segmentation filename, return a dict containing femur morphometry"""
     mesh_obj = get_mesh_from_segmentation(nifti_filename, largest_component=True)
 
-    label_dict = {"head": 4, "neck": 3, "sub_troc": 2}
     subtroc_mesh = extract_volume_surface(
-        get_segmentation_volume(nifti_filename, label_dict["sub_troc"])
+        get_segmentation_volume(nifti_filename, femur_label_dict["sub_troc"])
     )
 
     # diaphysis axis
@@ -149,7 +156,7 @@ def get_femur_morphometry(
     femoral_head_radius = (
         head_sphere.radius
     )  # why are we getting radius that is twice as big as it should be ?
-    # a normal femoral head is around 16 mm.
+    # a normal femoral head radius is around 16 mm.
     femoral_head_radius = femoral_head_radius / 2  # quick fix: just divide by 2
 
     femoral_head_offset = get_distance_to_line_segment(
@@ -211,7 +218,6 @@ def get_femur_morphometry(
 
 def test_single():
     """test single example"""
-    import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("nifti_file")
@@ -230,15 +236,14 @@ def test_single():
 
 def process_dir():
     """process all segmentation in a directory"""
-    import csv
-
-    from tqdm import tqdm
 
     filenames = list(Path("femur_manual_cut_plane").glob("*.nii.gz"))
     print(f"processing {len(filenames)} files")
 
     filestream = open(
-        Path("femur_manual_cut_plane/metrics_log") / "metric-log.csv", "w"
+        Path("femur_manual_cut_plane/metrics_log") / "metric-log.csv",
+        "w",
+        encoding="utf-8",
     )
     filestream_writer = csv.writer(filestream)
     header = [
@@ -253,9 +258,9 @@ def process_dir():
     ]
     filestream_writer.writerow(header)
 
-    for f in tqdm(filenames):
+    for fname in tqdm(filenames):
         metric_out = get_femur_morphometry(
-            str(f),
+            str(fname),
             visualize=True,
             offscreen=True,
             screenshot=True,
@@ -263,11 +268,11 @@ def process_dir():
         )
         filestream_writer.writerow(
             [
-                "{:.2f}".format(item)
-                if type(item) == float or type(item) == np.float64
+                f"{item:.2f}"
+                if isinstance(item, float) or isinstance(item, np.float64)  # type: ignore
                 else item
                 for item in [
-                    get_nifti_stem(str(f)),
+                    get_nifti_stem(str(fname)),
                     metric_out["fhr_mean"],
                     metric_out["fna_mean"],
                     metric_out["fnw"],

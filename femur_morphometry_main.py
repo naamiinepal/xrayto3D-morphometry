@@ -1,3 +1,10 @@
+"""write femur morphometry into femur_clinical.csv
+Args:
+    --predicted whether to obtain morphometry for groundtruth segmentation or predicted segmentation
+    --dir where to save csv
+TODO: currently, only those segmentations with subtrochanter region is handled. 
+    Extend to those with non-subtrochanteric region, by evaluating on the FNA (instead of NSA)
+"""
 import argparse
 import csv
 import os
@@ -30,7 +37,7 @@ def femur_morphometry_helper(filepath, log_dir=FEMUR_MANUAL_CUT_PLANE_DIR):
         return
     metrics_dict = get_femur_morphometry(filepath, get_subtrochanter_center(filepath))
     print(get_nifti_stem(filepath), metrics_dict)
-    with open(f"{log_dir}/metrics_log/femur_clinical.csv", "a") as f:
+    with open(f"{log_dir}/metrics_log/femur_clinical.csv", "a", encoding="utf-8") as f:
         f.write(get_metric_formatted_row(filepath, metrics_dict))
 
 
@@ -38,7 +45,7 @@ def write_metric_log_header(filepath):
     """write output log header"""
     outdir = Path(f"{filepath}/metrics_log")
     outdir.mkdir(exist_ok=True)
-    with open(outdir / "femur_clinical.csv", "w") as filestream:
+    with open(outdir / "femur_clinical.csv", "w", encoding="utf-8") as filestream:
         filestream_writer = csv.writer(filestream)
         header = ["subject-id", "FHR(mm)", "FNA(degrees)", "FHO(mm)"]
         filestream_writer.writerow(header)
@@ -67,7 +74,7 @@ def reconstructed_femur_morphometry_helper(
     metrics_dict = get_femur_morphometry(
         predicted_filepath, get_subtrochanter_center(gt_filepath)
     )
-    with open(f"{log_dir}/metrics_log/femur_clinical.csv", "a") as f:
+    with open(f"{log_dir}/metrics_log/femur_clinical.csv", "a", encoding="utf-8") as f:
         f.write(get_metric_formatted_row(predicted_filepath, metrics_dict))
     if verbose:
         print(gt_filepath)

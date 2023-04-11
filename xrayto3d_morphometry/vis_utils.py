@@ -29,9 +29,20 @@ def get_oriented_camera(mesh_obj: vedo.Mesh, axis, camera_dist=200):
 
 
 def get_direction_axes(center, axis1, axis2, axis3, scale=20) -> List[vedo.Mesh]:
-    a = vedo.Arrow(center, center + axis1 * scale, c="r")
-    b = vedo.Arrow(center, center + axis2 * scale, c="g")
-    c = vedo.Arrow(center, center + axis3 * scale, c="b")
+    axis1 = tuple(axis1)
+    axis2 = tuple(axis2)
+    axis3 = tuple(axis3)
+    center = tuple(center)
+
+    a = vedo.Arrow(
+        center, add_tuple(center, multiply_tuple_scalar(axis1, scale)), c="r"
+    )
+    b = vedo.Arrow(
+        center, add_tuple(center, multiply_tuple_scalar(axis2, scale)), c="g"
+    )
+    c = vedo.Arrow(
+        center, add_tuple(center, multiply_tuple_scalar(axis3, scale)), c="b"
+    )
     return [a, b, c]
 
 

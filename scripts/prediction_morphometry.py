@@ -7,8 +7,6 @@ from xrayto3d_morphometry import (
     femur_label_dict,
     get_segmentation_volume,
     extract_volume_surface,
-    seg_contain_subtrochanter,
-    get_subtrochanter_center,
 )
 
 FEMUR_MANUAL_CUT_PLANE_DIR = (
@@ -55,11 +53,3 @@ def get_subtrochanter_center(nifti_file) -> Tuple[float, float, float]:
         get_segmentation_volume(nifti_file, femur_label_dict["sub_troc"])
     )
     return subtroc_mesh.center_of_mass()
-
-
-def test_single():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("nifti_file")
-    parser.add_argument("--robust", default=False, action="store_true")
-
-    args = parser.parse_args()

@@ -90,7 +90,7 @@ def get_landmarks(
         aligned_mesh.points()[mwp_p1_idx], aligned_mesh.points()[mwp_p2_idx], alpha=0.5
     )  # type: ignore
     tph_intercept, dlc, drc = get_transverse_plane_height(
-        aligned_mesh, mwp_midpoint, alpha=0.6, verbose=True
+        aligned_mesh, mwp_midpoint, alpha=0.6, additional_landmarks=True
     )  # type: ignore
     tl, bl, tr, br = get_quadrant_meshes(aligned_mesh, (0, tph_intercept, 0))
 

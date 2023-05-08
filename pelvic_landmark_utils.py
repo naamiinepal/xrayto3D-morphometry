@@ -84,7 +84,7 @@ def get_maximal_pelvic_points(hip_mesh):
 
 
 def get_transverse_plane_height(
-    mesh, proximal_midpoint, sagittal_axis_normal=(1, 0, 0), alpha=0.6, verbose=False
+    mesh, proximal_midpoint, sagittal_axis_normal=(1, 0, 0), alpha=0.6, additional_landmarks=False
 ):
     """return transverse plane intercept"""
     left_mesh = mesh.clone(transformed=True).cut_with_plane(
@@ -103,9 +103,10 @@ def get_transverse_plane_height(
     _, transverse_plane_height, _ = lerp(
         distal_midpoint, proximal_midpoint, alpha=alpha
     )
-    if verbose:
+    if additional_landmarks:
         return transverse_plane_height, distal_left_coord, distal_right_coord
-    return transverse_plane_height
+    else:
+        return transverse_plane_height
 
 
 def get_quadrant_meshes(
@@ -114,7 +115,6 @@ def get_quadrant_meshes(
     sagittal_plane_pos=(0, 0, 0),
     transverse_axis_normal=(0, 1, 0),
     sagittal_axis_normal=(1, 0, 0),
-    verbose=False,
 ):
     """return 4 pieces of meshes cut by transverse_axis and sagittal_axis at given positions"""
     bottom_left: vedo.Mesh = (

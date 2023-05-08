@@ -96,7 +96,7 @@ def get_landmarks(
 
     i = 0
     pt_p1_idx, pt_p2_idx, asis_p1_idx, asis_p2_idx, T = get_asis_estimate(
-        aligned_mesh, (0, tph_intercept, 0), verbose=True
+        aligned_mesh, (0, tph_intercept, 0), verbose=False
     )
     init_pt_p1_idx, init_pt_p2_idx, init_asis_p1_idx, init_asis_p2_idx = (
         pt_p1_idx,
@@ -104,6 +104,15 @@ def get_landmarks(
         asis_p1_idx,
         asis_p2_idx,
     )
+    # orientation checks
+    # the widest points (maximal pelvic points) should be farther along the I-S axis than asis
+    asis_midpoint = lerp(
+        aligned_mesh.points()[asis_p1_idx], aligned_mesh.points()[asis_p2_idx], 0.5
+    )
+    if mwp_midpoint[1] < asis_midpoint[1]:
+        print(f"Orientation check failed {get_nifti_stem(nifti_filename)}")
+    else:
+        print(f"{get_nifti_stem(nifti_filename)}")
     if iterative:
         print("starting iterative optimization...")
         while True:  # do while loop
@@ -116,7 +125,9 @@ def get_landmarks(
                     asis_p1_idx,
                     asis_p2_idx,
                     new_T,
-                ) = get_asis_estimate(aligned_mesh, (0, tph_intercept, 0), verbose=True)
+                ) = get_asis_estimate(
+                    aligned_mesh, (0, tph_intercept, 0), verbose=False
+                )
 
                 if (
                     np.allclose(new_T, np.eye(3), atol=0.02)

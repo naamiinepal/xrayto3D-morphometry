@@ -2,7 +2,7 @@
 import numpy as np
 import vedo
 
-from .distances import get_farthest_point_along_axis
+from .distances import get_farthest_point_along_axis, brute_force_search_get_closest_points_between_point_clouds
 from .geom_ops import lerp, get_midpoint
 
 
@@ -128,6 +128,32 @@ def get_ischial_mesh_cut(
     right_largest = right.extract_largest_region()  # remove parts of sacrum
 
     return left_largest, right_largest
+
+
+def get_candidate_ischial_spines(ischial_mesh):
+    ischial_mesh.compute_connectivity()
+    ischial_spines = []
+    for i in range(-5, 45, 1):  # rotate mesh along x-axis by (-5,45) degree in stepsize of 1 degree
+        ischial_mesh_rotated = ischial_mesh.clone(transformed=True).rotate_x(i)
+        candidate_is, candidate_is_idx = get_farthest_point_along_axis(
+            ischial_mesh_rotated.points(), axis=2, negative=True
+        )
+        ischial_spines.append(vedo.Point(ischial_mesh.points()[candidate_is_idx]))
+    return ischial_spines
+
+
+def get_ischial_points_estimate(aligned_mesh_obj, ps_height, app_height):
+    """return ischial spine points (left and right)"""
+    ischial_mesh_left, ischial_mesh_right = get_ischial_mesh_cut(
+        aligned_mesh_obj, ps_height, app_height
+    )
+    ischial_spines_left = get_candidate_ischial_spines(ischial_mesh_left)
+    ischial_spines_right = get_candidate_ischial_spines(ischial_mesh_right)
+    is_1, is_2, is_dist = brute_force_search_get_closest_points_between_point_clouds(
+        [p.GetPosition() for p in ischial_spines_left],
+        [p.GetPosition() for p in ischial_spines_right],
+    )
+    return is_1, is_2
 
 
 def get_asis_estimate(

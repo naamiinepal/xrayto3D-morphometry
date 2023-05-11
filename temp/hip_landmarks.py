@@ -9,6 +9,7 @@ from xrayto3d_morphometry import (
     align_along_principal_axes,
     brute_force_search_get_closest_points_between_point_clouds,
     get_asis_estimate,
+    get_quadrant_cuts,
     get_farthest_point_along_axis,
     get_files_from_run_id,
     get_ischial_mesh_cut,
@@ -23,7 +24,7 @@ from xrayto3d_morphometry import (
 )
 
 
-def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
+def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="./screenshots"):
     mesh_obj = get_mesh_from_segmentation(nifti_filename)
     mesh_obj.rotate_x(180, around=mesh_obj.center_of_mass())  # for camera orientation
     move_to_origin(mesh_obj)
@@ -46,7 +47,10 @@ def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
     tph, distal_midpoint = get_transverse_plane_height(
         aligned_mesh_obj, mwp_midpoint, alpha=TRANSVERSE_PLANE_ALPHA
     )
-    asis_points = get_asis_estimate(aligned_mesh_obj, transverse_plane_pos=(0, tph, 0))
+    
+    bottom_left, top_left, bottom_right, top_right = get_quadrant_cuts(aligned_mesh_obj, transverse_plane_pos=(0, tph, 0))
+    
+    asis_points = get_asis_estimate(bottom_left, top_left, bottom_right, top_right)
     psis_points = get_psis_estimate(aligned_mesh_obj, transverse_plane_pos=(0, tph, 0))
     asis_p1, asis_p2, pt_p1, pt_p2, ps, _ = asis_points
     asis_midpoint = get_midpoint(asis_p1, asis_p2)
@@ -56,6 +60,7 @@ def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
     # Sanity Check: for some cases, aligning along principal axis results in flipped meshes, bring them back to correct orientation by checking ASIS and MWP orientation
     if asis_midpoint.GetPosition()[1] < mwp_midpoint.GetPosition()[1]:
         if "s0477" in nifti_filename:
+            # hard-coded case
             pass
         else:
             aligned_mesh_obj.rotate_x(angle=180, around=(0, 0, 0))
@@ -66,9 +71,9 @@ def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
             tph, distal_midpoint = get_transverse_plane_height(
                 aligned_mesh_obj, mwp_midpoint, alpha=TRANSVERSE_PLANE_ALPHA
             )
-            asis_points = get_asis_estimate(
-                aligned_mesh_obj, transverse_plane_pos=(0, tph, 0)
-            )
+            bottom_left, top_left, bottom_right, top_right = get_quadrant_cuts(aligned_mesh_obj, transverse_plane_pos=(0, tph, 0))
+            
+            asis_points = get_asis_estimate(bottom_left, top_left, bottom_right, top_right)
             psis_points = get_psis_estimate(
                 aligned_mesh_obj, transverse_plane_pos=(0, tph, 0)
             )
@@ -96,7 +101,7 @@ def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
             aligned_mesh_obj, is_1, is_2, msp_p1, msp_p2, asis_midpoint
         )
 
-    except LandmarkNotFoundError as e:
+    except LandmarkNotFoundError:
         sp_found = False
 
     # sanity check: SP should be superior to ASIS
@@ -105,6 +110,7 @@ def visualize_mesh(nifti_filename, offscreen=False, screenshot_out_dir="."):
             print(nifti_filename)
 
     cam = get_oriented_camera(aligned_mesh_obj, 2, 400)
+    cam['position'][2] = -cam['position'][2]
     vedo.show(
         aligned_mesh_obj.c("white", 0.6),
         sacral_region.c("green") if sp_found else vedo.Point(alpha=0.0),
@@ -276,10 +282,11 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("nifti_file")
+    parser.add_argument('--offscreen', default=False, action='store_true')
 
     args = parser.parse_args()
 
-    visualize_mesh(args.nifti_file)
+    visualize_mesh(args.nifti_file,offscreen=args.offscreen)
 
 
 def process_runs():

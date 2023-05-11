@@ -2,6 +2,11 @@
 import argparse
 from pathlib import Path
 import vedo
+import numpy as np
+from functools import partial
+import os
+from multiprocessing import Pool
+import csv
 
 from xrayto3d_morphometry import (
     align_along_principal_axes,
@@ -16,8 +21,48 @@ from xrayto3d_morphometry import (
     move_to_origin,
     get_app_plane_rotation_matrix,
     get_farthest_point_along_axis,
-    get_distance_between_points
+    get_distance_between_points,
+    get_nifti_stem
 )
+np.set_printoptions(precision=3, suppress=True)
+
+
+def file_type_gt_or_pred(filename: str):
+    """return either GT or PRED """
+    if 'gt' in filename:
+        return 'GT'
+    if 'pred' in filename:
+        return 'PRED'
+
+    raise ValueError(f'filename {filename} should either contain `gt` or `pred` as prefix')
+
+
+def get_landmark_formatted_header():
+    """return landmark header for readability"""
+    header = ("id,gt_or_pred" +
+              ",asis_l_x,asis_l_y,asis_l_z" +
+              ",asis_r_x,asis_r_y,asis_r_z" +
+              ",pt_l_x,pt_l_y,pt_l_z" +
+              ",pt_r_x,pt_r_y,pt_r_z" +
+              ",is_l_x,is_l_y,is_l_z" +
+              ",is_r_x,is_r_y,is_r_z" +
+              ",psis_l_x,psis_l_y,psis_l_z" +
+              ",psis_r_x,psis_r_y,psis_r_z")
+    return header
+
+
+def write_log_header(filepath, filename):
+    """write output log header"""
+    outdir = Path(f"{filepath}/")
+    outdir.mkdir(exist_ok=True)
+    with open(outdir / f"{filename}", "w", encoding="utf-8") as f:
+        header = get_landmark_formatted_header()
+        f.write(f'{header}\n')
+
+
+def get_landmark_formatted_row(nifti_file, landmarks):
+    """output formatted string containing comma-separated landmarks"""
+    return f"{get_nifti_stem(str(nifti_file))[:5]},{file_type_gt_or_pred(str(nifti_file))},{landmarks['ASIS_L'][0]:.3f},{landmarks['ASIS_L'][1]:.3f},{landmarks['ASIS_L'][2]:.3f},{landmarks['ASIS_R'][0]:.3f},{landmarks['ASIS_R'][1]:.3f},{landmarks['ASIS_R'][2]:.3f},{landmarks['PT_L'][0]:.3f},{landmarks['PT_L'][1]:.3f},{landmarks['PT_L'][2]:.3f},{landmarks['PT_R'][0]:.3f},{landmarks['PT_R'][1]:.3f},{landmarks['PT_R'][2]:.3f},{landmarks['IS_L'][0]:.3f},{landmarks['IS_L'][1]:.3f},{landmarks['IS_L'][2]:.3f},{landmarks['IS_R'][0]:.3f},{landmarks['IS_R'][1]:.3f},{landmarks['IS_R'][2]:.3f},{landmarks['PSIS_L'][0]:.3f},{landmarks['PSIS_L'][1]:.3f},{landmarks['PSIS_L'][2]:.3f},{landmarks['PSIS_R'][0]:.3f},{landmarks['PSIS_R'][1]:.3f},{landmarks['PSIS_R'][2]:.3f}"
 
 def get_landmarks(mesh_obj, mesh_filename):
     """return landmarks as dict"""
@@ -74,7 +119,6 @@ def get_landmarks(mesh_obj, mesh_filename):
     # get PSIS points
     cut_plane_origin = (0,asis_p1.GetPosition()[1],0)
     superior_boundary = get_farthest_point_along_axis(top_left.points(),axis=1, negative=True)[0]
-    print('SUPERIOR Boundary', superior_boundary)
     while True:
         top_left_cut = aligned_mesh_obj.clone(transformed=True).cut_with_plane(normal=(0,1,0), origin=cut_plane_origin, invert=True).cut_with_plane(normal=(1,0,0))
         top_right_cut = aligned_mesh_obj.clone(transformed=True).cut_with_plane(normal=(0,1,0), origin=cut_plane_origin,invert=True).cut_with_plane(normal=(1,0,0),invert=True)
@@ -115,34 +159,87 @@ def get_landmarks(mesh_obj, mesh_filename):
     }, aligned_mesh_obj
 
 
-def main(nifti_filename, offscreen=False, screenshot_out_dir="./screenshots"):
+def main(nifti_filename, offscreen=False,screenshot=False,  screenshot_out_dir="./screenshots"):
     mesh_obj = get_mesh_from_segmentation(nifti_filename)
     mesh_obj.rotate_x(180, around=mesh_obj.center_of_mass())
     
     landmark_indices, aligned_mesh_obj = get_landmarks(mesh_obj, nifti_filename)
-    landmarks = [mesh_obj.points()[landmark_indices[key]] for key in landmark_indices]
-    print(landmarks)
-    # visualize landmarks
-    cam = get_oriented_camera(mesh_obj, axis=2, camera_dist=400)
-    cam['position'][2] = cam['position'][2]
-    vedo.show(
-        mesh_obj.c('white', 0.6),
-        vedo.Points(landmarks, c='blue', r=24),
-        resetcam=False,
-        camera=cam,
-        axes=1,
-        offscreen=offscreen
-    )
-    out_filename = Path(nifti_filename).with_suffix(".png")
-    vedo.screenshot(str(Path(screenshot_out_dir) / out_filename.name))
-    if offscreen:
-        vedo.close()
+    landmarks = {key:mesh_obj.points()[landmark_indices[key]] for key in landmark_indices}
+    landmarks_list = [landmarks[key] for key in landmarks]
+    print(get_landmark_formatted_row(nifti_filename, landmarks))
+    if screenshot:
+        # visualize landmarks
+        cam = get_oriented_camera(mesh_obj, axis=2, camera_dist=400)
+        cam['position'][2] = cam['position'][2]
+        vedo.show(
+            mesh_obj.c('white', 0.6),
+            vedo.Points(landmarks_list, c='blue', r=24),
+            resetcam=False,
+            camera=cam,
+            axes=1,
+            offscreen=offscreen
+        )
+        out_filename = Path(nifti_filename).with_suffix(".png")
+        vedo.screenshot(str(Path(screenshot_out_dir) / out_filename.name))
+        if offscreen:
+            vedo.close()
 
-if __name__ == '__main__':
+
+def single_processing():
     parser = argparse.ArgumentParser()
     parser.add_argument('nifti_file')
     parser.add_argument('--offscreen', default=False, action='store_true')
+    parser.add_argument('--screenshot', default=False, action='store_true')
 
     args = parser.parse_args()
 
-    main(args.nifti_file, args.offscreen)
+    main(args.nifti_file, args.offscreen, args.screenshot)
+
+
+def process_dir_multithreaded():
+    """process all files in a dir"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dir", type=str)
+    parser.add_argument("--log_filename", type=str)
+
+    args = parser.parse_args()
+    # write ouput file header
+    suffix = "*.nii.gz"
+
+    filenames = sorted(list(Path(args.dir).glob(f"{suffix}")))
+    print(f"processing {len(filenames)} files")
+
+    write_log_header(args.dir,args.log_filename)
+    worker_fn = partial(
+        pelvic_landmark_helper,
+        log_dir=args.dir,
+        log_filename=args.log_filename,
+    )
+    num_workers = os.cpu_count()
+    pool = Pool(processes=num_workers)
+    jobs = []
+    for item in filenames:
+        job = pool.apply_async(worker_fn, (item,))
+        jobs.append(job)
+    for job in jobs:
+        job.get()
+    pool.close()
+    pool.join()
+
+
+def pelvic_landmark_helper(nifti_filename, log_dir, log_filename):
+    """helper func"""
+    nifti_filename = str(nifti_filename)
+    mesh_obj = get_mesh_from_segmentation(nifti_filename)
+    mesh_obj.rotate_x(180, around=mesh_obj.center_of_mass())
+    
+    landmark_indices, aligned_mesh_obj = get_landmarks(mesh_obj, nifti_filename)
+    landmarks = {key:mesh_obj.points()[landmark_indices[key]] for key in landmark_indices}
+
+    with open(f'{log_dir}/{log_filename}', 'a', encoding='utf-8') as f:
+        f.write(f'{get_landmark_formatted_row(nifti_filename, landmarks)}\n')
+
+
+if __name__ == '__main__':
+    # single_processing()
+    process_dir_multithreaded()

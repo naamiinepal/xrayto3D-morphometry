@@ -3,7 +3,7 @@ import numpy as np
 import vedo
 
 from .distances import get_farthest_point_along_axis, brute_force_search_get_closest_points_between_point_clouds
-from .geom_ops import lerp, get_midpoint
+from .geom_ops import lerp, get_midpoint, get_vector_from_points
 
 
 def get_maximal_pelvic_width(hip_mesh_obj):
@@ -156,41 +156,25 @@ def get_ischial_points_estimate(aligned_mesh_obj, ps_height, app_height):
     return is_1, is_2
 
 
+def get_app_plane_rotation_matrix(
+    pt_p1_coord, pt_p2_coord, asis_p1_coord, asis_p2_coord
+):
+    """return 3x3 rotation matrix that defines the axes of the APP plane
+    defined by the ASIS and Pubic Symphysis"""
+    x_direction = get_vector_from_points(pt_p2_coord, pt_p1_coord)
+    pt_mid = lerp(pt_p1_coord, pt_p2_coord, 0.5)
+    app_points = vedo.Points([asis_p1_coord, asis_p2_coord, pt_mid])
+    app_plane = vedo.fit_plane(app_points)
+    normal = -app_plane.normal
+    transformation_matrix = np.array([x_direction, np.cross(normal, x_direction), normal])
+    return transformation_matrix
+
+
 def get_asis_estimate(
-    hip_mesh_obj,
-    transverse_plane_pos,
-    transverse_axis_normal=(0, 1, 0),
-    sagittal_axis_normal=(1, 0, 0),
+    bottom_left, top_left, bottom_right, top_right,
     verbose=False,
 ):
     """return ASIS(Anterior Superior Illiac Spine) landmarks"""
-    bottom_left: vedo.Mesh = (
-        hip_mesh_obj.clone(transformed=True)
-        .cut_with_plane(normal=sagittal_axis_normal)
-        .cut_with_plane(normal=transverse_axis_normal, origin=transverse_plane_pos)
-    )
-    top_left: vedo.Mesh = (
-        hip_mesh_obj.clone(transformed=True)
-        .cut_with_plane(normal=sagittal_axis_normal)
-        .cut_with_plane(
-            normal=transverse_axis_normal, invert=True, origin=transverse_plane_pos
-        )
-    )
-    bottom_right: vedo.Mesh = (
-        hip_mesh_obj.clone(transformed=True)
-        .cut_with_plane(normal=sagittal_axis_normal, invert=True)
-        .cut_with_plane(
-            normal=transverse_axis_normal, invert=False, origin=transverse_plane_pos
-        )
-    )
-    top_right: vedo.Mesh = (
-        hip_mesh_obj.clone(transformed=True)
-        .cut_with_plane(normal=sagittal_axis_normal, invert=True)
-        .cut_with_plane(
-            normal=transverse_axis_normal, invert=True, origin=transverse_plane_pos
-        )
-    )
-
     pt_p1 = vedo.Point(
         get_farthest_point_along_axis(bottom_left.points(), axis=2, negative=False)[0]
     )
@@ -217,3 +201,35 @@ def get_asis_estimate(
         print(f"x axis {x_axis}")
         print(f"y axis {asis_plane.normal}")
     return asis_p1_, asis_p2, pt_p1, pt_p2, ps, asis_plane.opacity(alpha=0.8)
+
+
+def get_quadrant_cuts(hip_mesh_obj, transverse_plane_pos, transverse_axis_normal=(0, 1, 0), sagittal_axis_normal=(1, 0, 0)):
+    """cut mesh into four quadrants"""
+    bottom_left: vedo.Mesh = (
+        hip_mesh_obj.clone(transformed=True)
+        .cut_with_plane(normal=sagittal_axis_normal)
+        .cut_with_plane(normal=transverse_axis_normal, origin=transverse_plane_pos)
+    )
+    top_left: vedo.Mesh = (
+        hip_mesh_obj.clone(transformed=True)
+        .cut_with_plane(normal=sagittal_axis_normal)
+        .cut_with_plane(
+            normal=transverse_axis_normal, invert=True, origin=transverse_plane_pos
+        )
+    )
+    bottom_right: vedo.Mesh = (
+        hip_mesh_obj.clone(transformed=True)
+        .cut_with_plane(normal=sagittal_axis_normal, invert=True)
+        .cut_with_plane(
+            normal=transverse_axis_normal, invert=False, origin=transverse_plane_pos
+        )
+    )
+    top_right: vedo.Mesh = (
+        hip_mesh_obj.clone(transformed=True)
+        .cut_with_plane(normal=sagittal_axis_normal, invert=True)
+        .cut_with_plane(
+            normal=transverse_axis_normal, invert=True, origin=transverse_plane_pos
+        )
+    )
+    
+    return bottom_left, top_left, bottom_right, top_right

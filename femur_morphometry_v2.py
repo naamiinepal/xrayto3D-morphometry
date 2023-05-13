@@ -75,15 +75,15 @@ def get_formatted_header():
     """return header for readability """
     header = ("id,gt_or_pred" +
               ",fhr,fhc_x,fhc_y,fhc_z" +
-              ",fho,nsa" +
+              ",nsa" +
               ",fna_x,fna_y,fna_z" +
               ",fda_x,fda_y,fda_z")
     return header
 
 
-def get_formatted_row(nifti_file, measurements:dict):
+def get_formatted_row(nifti_file, measurements: dict):
     """return formatted string containing comma-separated measurements """
-    return f"{get_nifti_stem(str(nifti_file))[:16]},{file_type_gt_or_pred(str(nifti_file))},{measurements['fhr']:.3f},{measurements['fhc_x']:.3f},{measurements['fhc_y']:.3f},{measurements['fhc_z']:.3f},{measurements['fho']:.3f},{measurements['nsa']:.3f},{measurements['fna_x']:.3f},{measurements['fna_y']:.3f},{measurements['fna_z']:.3f},{measurements['fda_x']:.3f},{measurements['fda_y']:.3f},{measurements['fda_z']:.3f}"
+    return f"{get_nifti_stem(str(nifti_file))[:16]},{file_type_gt_or_pred(str(nifti_file))},{measurements['fhr']:.3f},{measurements['fhc_x']:.3f},{measurements['fhc_y']:.3f},{measurements['fhc_z']:.3f},{measurements['nsa']:.3f},{measurements['fna_x']:.3f},{measurements['fna_y']:.3f},{measurements['fna_z']:.3f},{measurements['fda_x']:.3f},{measurements['fda_y']:.3f},{measurements['fda_z']:.3f}"
 
 
 def write_log_header(filepath, filename):
@@ -118,10 +118,10 @@ def femur_morphometry_helper(nifti_filename, log_dir, log_filename):
     if not metrics_dict:
         print('Empty Dict')
     else:
-        print(metrics_dict)
 
         with open(f'{log_dir}/{log_filename}', 'a', encoding='utf-8') as f:
-            f.write(get_formatted_row(nifti_filename, metrics_dict))
+            row = get_formatted_row(nifti_filename, metrics_dict)
+            f.write(f'{row}\n')
 
 
 def process_dir_multithreaded():
@@ -133,7 +133,7 @@ def process_dir_multithreaded():
     args = parser.parse_args()
     suffix = '*.nii.gz'
     filenames = sorted(list(Path(args.dir).glob(suffix)))
-    print(f'processing {len(filenames)} files')
+    print(f'processing {len(filenames)} files from {args.dir}')
 
     # write output file header
     write_log_header(args.dir, args.log_filename)

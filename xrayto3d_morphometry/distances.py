@@ -61,6 +61,14 @@ def get_closest_point_from_line(
     return result.tolist()
 
 
+def project_points_onto_line(points: List, line_p0: Sequence[float], line_p1: Sequence[float]):
+    """projection of points on line"""
+    projections_on_line = [
+        get_closest_point_from_line(p, line_p0, line_p1) for p in points
+    ]
+    return projections_on_line
+
+
 def get_closest_point_from_plane(
     mesh_obj: vedo.Mesh, plane: Union[vedo.Plane, Sequence[float]]
 ):
@@ -81,7 +89,18 @@ def get_farthest_point_from_line_segment(
         get_distance2_to_line_segment(p, line_p0, line_p1) for p in points
     ]
     candidate_point_idx = np.argmax(distance_to_line)
-    return points[np.argmax(distance_to_line)], candidate_point_idx
+    return points[candidate_point_idx], candidate_point_idx
+
+
+def get_closest_point_from_line_segment(
+    points: np.ndarray, line_p0: Sequence[float], line_p1: Sequence[float]
+):
+    """return the point farthest from line segment represented by start and end point"""
+    distance_to_line = [
+        get_distance2_to_line_segment(p, line_p0, line_p1) for p in points
+    ]
+    candidate_point_idx = np.argmin(distance_to_line)
+    return points[candidate_point_idx], candidate_point_idx
 
 
 def get_line_segment(

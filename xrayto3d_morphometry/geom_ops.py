@@ -14,6 +14,11 @@ def get_distance_between_points(p1: Sequence[float], p2: Sequence[float]):
     return np.sqrt(vtkMath.Distance2BetweenPoints(p1, p2))
 
 
+def get_distance2_between_points(p1: Sequence[float], p2: Sequence[float]):
+    """ squared euclidean distance"""
+    return vtkMath.Distance2BetweenPoints(p1, p2)
+
+
 def get_distance2_to_line_segment(p0: Sequence[float], line_p0: Sequence[float], line_p1: Sequence[float]):
     """return squared distance to line segment"""
     return vtkLine.DistanceToLine(p0, line_p0, line_p1)

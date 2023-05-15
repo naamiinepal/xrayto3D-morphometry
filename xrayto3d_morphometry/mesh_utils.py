@@ -24,8 +24,8 @@ def align_along_principal_axes(mesh_obj) -> Tuple[vedo.Mesh, np.ndarray]:
     return aligned_mesh_obj, T
 
 
-def get_mesh_from_segmentation(filename: str, largest_component=False, flying_edges=True, decimate=False, decimation_ratio=1.0, isosurface_value=1.0) -> vedo.Mesh:
-    np_volume = get_volume(filename, largest_component)
+def get_mesh_from_segmentation(filename: str, largest_component=False, flying_edges=True, decimate=False, decimation_ratio=1.0, isosurface_value=1.0, reorient=False, orientation='PIR') -> vedo.Mesh:
+    np_volume = get_volume(filename, largest_component, reorient=reorient, orientation=orientation)
 
     # isosurface_values = get_segmentation_labels(sitk_volume)
     mesh_obj: vedo.Mesh = np_volume.isosurface(value=isosurface_value-0.1, flying_edges=flying_edges)
@@ -35,8 +35,10 @@ def get_mesh_from_segmentation(filename: str, largest_component=False, flying_ed
     return mesh_obj.cap()
 
 
-def get_volume(filename, largest_component=False, isotropic=True) -> vedo.Volume:
+def get_volume(filename, largest_component=False, isotropic=True, reorient=False, orientation='PIR') -> vedo.Volume:
     sitk_volume = sitk.ReadImage(filename)
+    if reorient:
+        sitk_volume = sitk.DICOMOrient(sitk_volume, orientation)
 
     if largest_component:
         # get largest connected component

@@ -410,8 +410,14 @@ def write_log_header(filepath, filename):
 
 def get_landmark_formatted_header():
     return (
-        "id,gt_or_pred",
-        +",spl" + ",spa" + ",avbh" + ",pvbh" + ",svbl" + ",ivbl" + ",vcl",
+        "id,gt_or_pred"
+        + ",spl"
+        + ",spa"
+        + ",avbh"
+        + ",pvbh"
+        + ",svbl"
+        + ",ivbl"
+        + ",vcl",
     )
 
 

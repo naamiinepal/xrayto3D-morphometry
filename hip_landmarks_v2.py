@@ -159,7 +159,7 @@ def get_landmarks(mesh_obj, mesh_filename):
     }, aligned_mesh_obj
 
 
-def main(nifti_filename, offscreen=False,screenshot=False,  screenshot_out_dir="./screenshots"):
+def main(nifti_filename, offscreen=False, screenshot=False,  screenshot_out_dir="./screenshots"):
     mesh_obj = get_mesh_from_segmentation(nifti_filename)
     mesh_obj.rotate_x(180, around=mesh_obj.center_of_mass())
     
@@ -167,20 +167,21 @@ def main(nifti_filename, offscreen=False,screenshot=False,  screenshot_out_dir="
     landmarks = {key:mesh_obj.points()[landmark_indices[key]] for key in landmark_indices}
     landmarks_list = [landmarks[key] for key in landmarks]
     print(get_landmark_formatted_row(nifti_filename, landmarks))
-    if screenshot:
+    if not offscreen:
         # visualize landmarks
         cam = get_oriented_camera(mesh_obj, axis=2, camera_dist=400)
         cam['position'][2] = cam['position'][2]
         vedo.show(
-            mesh_obj.c('white', 0.6),
+            mesh_obj.c('white', 1.0),
             vedo.Points(landmarks_list, c='blue', r=24),
             resetcam=False,
             camera=cam,
             axes=1,
             offscreen=offscreen
         )
-        out_filename = Path(nifti_filename).with_suffix(".png")
-        vedo.screenshot(str(Path(screenshot_out_dir) / out_filename.name))
+        if screenshot:
+            out_filename = Path(nifti_filename).with_suffix(".png")
+            vedo.screenshot(str(Path(screenshot_out_dir) / out_filename.name))
         if offscreen:
             vedo.close()
 
@@ -241,5 +242,5 @@ def pelvic_landmark_helper(nifti_filename, log_dir, log_filename):
 
 
 if __name__ == '__main__':
-    # single_processing()
-    process_dir_multithreaded()
+    single_processing()
+    # process_dir_multithreaded()

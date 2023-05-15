@@ -333,7 +333,7 @@ def main(
 ):
     """single file processing entry point"""
     vert_mesh = get_mesh_from_segmentation(
-        nifti_file, largest_component=True, reorient=True, orientation="ASL"
+        nifti_file, largest_component=True, reorient=False
     )
     move_to_origin(vert_mesh)
 
@@ -348,10 +348,11 @@ def main(
     sideview_cam = get_oriented_camera(vert_mesh, axis=0, camera_dist=200)
     sideview_cam["viewup"] = (0, 1, 0)
     vedo.show(
-        # vert_mesh.c("white",1.0),
+        # vert_mesh.c("white", 1.0),
         vert_mesh.clone(transformed=True)
         .cut_with_plane(normal=sym_plane.normal, invert=True)
         .c("white", alpha=0.5),
+        sym_plane.opacity(0.5),
         *visualization_objects,
         axes=1,
         camera=sideview_cam,
@@ -373,16 +374,20 @@ def single_processing():
     parser.add_argument("--screenshot", default=False, action="store_true")
     args = parser.parse_args()
 
-    main(args.nifti_file, args.offscreen, args.offscreen)
+    main(args.nifti_file, args.offscreen, args.screenshot, "./verse19_screenshots")
 
 
 def vertebra_landmark_helper(nifti_file, log_dir, log_filename):
     nifti_file = str(nifti_file)
     vert_mesh = get_mesh_from_segmentation(
-        nifti_file, largest_component=True, reorient=False
+        nifti_file, largest_component=True, reorient=True, orientation="PIR"
     )
     move_to_origin(vert_mesh)
-    metrics_dict, visualization_objects = get_vertebra_measurements(vert_mesh)
+    sym_plane = get_symmetry_plane(vert_mesh)
+    try:
+        metrics_dict, visualization_objects = get_vertebra_measurements(vert_mesh)
+    except:
+        return
 
     with open(f"{log_dir}/{log_filename}", "a", encoding="utf-8") as f:
         f.write(f"{get_landmark_formatted_row(nifti_file, metrics_dict)}\n")
@@ -393,9 +398,9 @@ def get_landmark_formatted_row(nifti_file, metrics):
     nifti_file = str(nifti_file)
     file_type = file_type_gt_or_pred(nifti_file)
     suffix = f"-seg-vert_msk_{file_type}"
-    file_id = get_nifti_stem(
-        str(nifti_file)[: -len(suffix)]
-    )  # sub-verse006_vert-23-seg-vert_msk_gt.nii.gz
+    file_id = get_nifti_stem(str(nifti_file))[
+        : -len(suffix)
+    ]  # sub-verse006_vert-23-seg-vert_msk_gt.nii.gz
     return f"{file_id},{file_type},{metrics['spl']:.2f},{metrics['spa']:.2f},{metrics['avbh']:.2f},{metrics['pvbh']:.2f},{metrics['svbl']:.2f},{metrics['ivbl']:.2f},{metrics['vcl']:.2f}"
 
 
@@ -409,7 +414,7 @@ def write_log_header(filepath, filename):
 
 
 def get_landmark_formatted_header():
-    return (
+    header = (
         "id,gt_or_pred"
         + ",spl"
         + ",spa"
@@ -417,8 +422,9 @@ def get_landmark_formatted_header():
         + ",pvbh"
         + ",svbl"
         + ",ivbl"
-        + ",vcl",
+        + ",vcl"
     )
+    return header
 
 
 def process_dir_multithreaded():

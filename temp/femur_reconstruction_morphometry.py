@@ -322,5 +322,5 @@ def test_single():
 
 
 if __name__ == "__main__":
-    process_dir()
-    # test_single()
+    # process_dir()
+    test_single()

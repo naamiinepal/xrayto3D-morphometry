@@ -223,6 +223,8 @@ def get_vertebra_measurements(vert_mesh):
     v0, s0, vcl = brute_force_search_get_closest_points_between_point_clouds(
         vertebral_body_points, spinous_process_points
     )
+    # sanity check: if vcl is very small, say less than 2mm
+    # then, the kmeans clustering algorithm above failed to separate vertebral body points and spinous process points
     pq_unit_vec = get_vector_from_points(v0, s0)
     vb_axis1, vb_axis2 = get_axis_lines(vbc, vertebral_body_points)
     sp_axis1, sp_axis2 = get_axis_lines(spc, spinous_process_points)
@@ -349,6 +351,7 @@ def main(
     sideview_cam["viewup"] = (0, 1, 0)
     vedo.show(
         # vert_mesh.c("white", 1.0),
+        vedo.Point(vert_mesh.center_of_mass(), r=16, c="green"),
         vert_mesh.clone(transformed=True)
         .cut_with_plane(normal=sym_plane.normal, invert=True)
         .c("white", alpha=0.5),
@@ -380,13 +383,18 @@ def single_processing():
 def vertebra_landmark_helper(nifti_file, log_dir, log_filename):
     nifti_file = str(nifti_file)
     vert_mesh = get_mesh_from_segmentation(
-        nifti_file, largest_component=True, reorient=True, orientation="PIR"
+        nifti_file, largest_component=True, reorient=False, orientation="PIR"
     )
     move_to_origin(vert_mesh)
     sym_plane = get_symmetry_plane(vert_mesh)
     try:
         metrics_dict, visualization_objects = get_vertebra_measurements(vert_mesh)
     except:
+        return
+
+    # do not log the results if this is a failure case
+    # 1. if the vcl is less than 2mm
+    if metrics_dict["vcl"] < 2:
         return
 
     with open(f"{log_dir}/{log_filename}", "a", encoding="utf-8") as f:
@@ -459,5 +467,5 @@ def process_dir_multithreaded():
 
 
 if __name__ == "__main__":
-    # single_processing()
-    process_dir_multithreaded()
+    single_processing()
+    # process_dir_multithreaded()

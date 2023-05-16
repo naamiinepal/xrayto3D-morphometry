@@ -383,7 +383,7 @@ def single_processing():
 def vertebra_landmark_helper(nifti_file, log_dir, log_filename):
     nifti_file = str(nifti_file)
     vert_mesh = get_mesh_from_segmentation(
-        nifti_file, largest_component=True, reorient=False, orientation="PIR"
+        nifti_file, largest_component=True, reorient=False
     )
     move_to_origin(vert_mesh)
     sym_plane = get_symmetry_plane(vert_mesh)

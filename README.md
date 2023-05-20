@@ -11,6 +11,8 @@ Original MATLAB code: [https://github.com/RWTHmediTEC/PelvicLandmarkIdentificati
 **For Proximal Femur**
 This is a adapted implementation from [Cerveri, Pietro, et al. "Automated method for computing the morphological and clinical parameters of the proximal femur using heuristic modeling techniques." Annals of Biomedical Engineering 38 (2010): 1752-1766](https://pubmed.ncbi.nlm.nih.gov/20177779/)
 
+**For Vertebra**
+Adapted from Di Angelo, Luca, and Paolo Di Stefano. "A new method for the automatic identification of the dimensional features of vertebrae." Computer methods and programs in biomedicine 121.1 (2015): 36-48.
 #### Usage
 ---
 ```shell

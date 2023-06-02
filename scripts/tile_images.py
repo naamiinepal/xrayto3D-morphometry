@@ -1,5 +1,4 @@
 """Tile images"""
-from pathlib import Path
 from PIL import Image, ImageFont, ImageDraw
 import argparse
 
@@ -10,17 +9,27 @@ args = parser.parse_args()
 
 Image.MAX_IMAGE_PIXELS = None
 
-orientations = ["coronal", "sagittal"]
+orientations = ["coronal", "sagittal", "axial"]
 MODEL_NAMES = [
-    "SwinUNETR",
-    "UNETR",
     "AttentionUnet",
-    "UNet",
-    "MultiScale2DPermuteConcat",
+    "SwinUNETR",
     "TwoDPermuteConcat",
+    "MultiScale2DPermuteConcat",
+    "UNet",
+    "UNETR",
     "OneDConcat",
     "TLPredictor",
 ]
+MODEL_NAMES_ALIAS = {
+    "AttentionUnet": "AttUnet",
+    "SwinUNETR": "SwinUNETR",
+    "TwoDPermuteConcat": "2DConcat",
+    "MultiScale2DPermuteConcat": "Multiscale2D",
+    "UNet": "UNet",
+    "UNETR": "UNETR",
+    "OneDConcat": "1DConcat",
+    "TLPredictor": "TLNet",
+}
 GRID_COL = len(MODEL_NAMES) + 1  # MODELS + GROUNDTRUTH
 GRID_ROW = 1
 SINGLE_IMG_SZ = 500
@@ -40,7 +49,9 @@ def save_montage(ANATOMY, subject_type):
             out_file = f"results/{ANATOMY}/{model_name}/{orientation}/{subject_type}_{orientation}.png"
             model_img = Image.open(out_file)
             MONTAGE.paste(model_img, (SINGLE_IMG_SZ * (i + 1), 0))
-            write_text_on_img(model_name, MONTAGE, (SINGLE_IMG_SZ * (i + 1), 0))
+            write_text_on_img(
+                MODEL_NAMES_ALIAS[model_name], MONTAGE, (SINGLE_IMG_SZ * (i + 1), 0)
+            )
 
         montage_out = f"results/{ANATOMY}/{subject_type}_{orientation}.png"
         MONTAGE.save(montage_out)
@@ -49,7 +60,7 @@ def save_montage(ANATOMY, subject_type):
 def write_text_on_img(model_name, model_img, coords):
     draw = ImageDraw.Draw(model_img)
     font = ImageFont.truetype(
-        "/usr/share/texmf/fonts/opentype/public/lm/lmmonocaps10-regular.otf", 48
+        "/usr/share/texmf/fonts/opentype/public/lm/lmmonocaps10-regular.otf", 70
     )
     draw.text(coords, model_name, (0, 0, 0), font=font)
 

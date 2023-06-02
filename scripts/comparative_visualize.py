@@ -23,7 +23,7 @@ wandb.login()
 runs = filter_wandb_run(anatomy=ANATOMY, tags=tags)
 
 
-orientations = ["coronal", "sagittal"]
+orientations = ["coronal", "sagittal", "axial"]
 MODEL_NAMES = [
     "SwinUNETR",
     "UNETR",
@@ -46,63 +46,73 @@ def get_best_median_worst_sample(model_name, runs):
     median_subject = df[df.DSC == df.median(numeric_only=True)["DSC"]][
         "subject-id"
     ].values[0]
-
-    return best_subject, median_subject, worst_subject
+    quantile_25th_subject = df[df.DSC == df.quantile(q=0.25, numeric_only=True)["DSC"]][
+        "subject-id"
+    ]
+    quantile_75th_subject = df[df.DSC == df.quantile(q=0.75, numeric_only=True)["DSC"]][
+        "subject-id"
+    ]
+    return (
+        best_subject,
+        quantile_75th_subject,
+        median_subject,
+        quantile_25th_subject,
+        worst_subject,
+    )
 
 
 def get_visualization_command(
-    ANATOMY, subject_id, run, orientation, model_name, subject_type
+    ANATOMY, subject_id, run, orientation, model_name, subject_out_prefix
 ):
-    out_file = (
-        f"results/{ANATOMY}/{model_name}/{orientation}/{subject_type}_{orientation}.png"
-    )
+    in_file = f"2d-3d-benchmark/{run.id}/evaluation/{subject_id}_pred.nii.gz"
+
+    out_file = f"results/{ANATOMY}/{model_name}/{orientation}/{subject_out_prefix}_{orientation}.png"
     Path(out_file).parent.mkdir(parents=True, exist_ok=True)
-    command_string = f"python scripts/preview.py 2d-3d-benchmark/{run.id}/evaluation/{subject_id}_pred.nii.gz --size 500 500 --color 255 193 149 --orientation {orientation} --projection orthographic --out {out_file}"
+
+    command_string = f"python scripts/preview.py {in_file}  --size 500 500 --color 255 193 149 --orientation {orientation} --projection orthographic --out {out_file}"
     return command_string
 
 
-best_subject, median_subject, worst_subject = get_best_median_worst_sample(
-    "SwinUNETR", runs
-)
-run = get_run_from_model_name("SwinUNETR", runs)
-for orientation in orientations:
-    best_gt_in = f"2d-3d-benchmark/{run.id}/evaluation/{best_subject}_gt.nii.gz "
-    best_gt_out = f"results/{ANATOMY}/groundtruth/{orientation}/best_{orientation}.png"
-    Path(best_gt_out).parent.mkdir(parents=True, exist_ok=True)
-    gt_command = f"python scripts/preview.py {best_gt_in} --size 500 500 --color 255 193 149 --orientation {orientation} --projection orthographic --out {best_gt_out}"
-    print(gt_command)
+if __name__ == "__main__":
+    (
+        best_subject,
+        quantile_75th_subject,
+        median_subject,
+        quantile_25th_subject,
+        worst_subject,
+    ) = get_best_median_worst_sample("SwinUNETR", runs)
 
-    worst_gt_in = f"2d-3d-benchmark/{run.id}/evaluation/{worst_subject}_gt.nii.gz "
-    worst_gt_out = (
-        f"results/{ANATOMY}/groundtruth/{orientation}/worst_{orientation}.png"
-    )
-    Path(worst_gt_out).parent.mkdir(parents=True, exist_ok=True)
-    gt_command = f"python scripts/preview.py {worst_gt_in} --size 500 500 --color 255 193 149 --orientation {orientation} --projection orthographic --out {worst_gt_out}"
-    print(gt_command)
+    run = get_run_from_model_name("SwinUNETR", runs)
+    for orientation in orientations:
+        for subject_id, subject_id_prefix in zip(
+            (
+                best_subject,
+                quantile_75th_subject,
+                median_subject,
+                quantile_25th_subject,
+                worst_subject,
+            ),
+            ("best", "quantile_75", "median", "quantile_25", "worst"),
+        ):
+            gt_command = get_visualization_command(
+                ANATOMY, subject_id, run, orientation, "groundtruth", subject_id_prefix
+            )
+            print(gt_command)
 
-    median_gt_in = f"2d-3d-benchmark/{run.id}/evaluation/{median_subject}_gt.nii.gz "
-    median_gt_out = (
-        f"results/{ANATOMY}/groundtruth/{orientation}/median_{orientation}.png"
-    )
-    Path(median_gt_out).parent.mkdir(parents=True, exist_ok=True)
-    gt_command = f"python scripts/preview.py {median_gt_in} --size 500 500 --color 255 193 149 --orientation {orientation} --projection orthographic --out {median_gt_out}"
-    print(gt_command)
-
-for orientation in orientations:
-    for model_name in MODEL_NAMES:
-        run = get_run_from_model_name(model_name, runs)
-        best_command = get_visualization_command(
-            ANATOMY, best_subject, run, orientation, model_name, "best"
-        )
-
-        print(best_command)
-
-        worst_command = get_visualization_command(
-            ANATOMY, worst_subject, run, orientation, model_name, "worst"
-        )
-        print(worst_command)
-
-        median_command = get_visualization_command(
-            ANATOMY, median_subject, run, orientation, model_name, "median"
-        )
-        print(median_command)
+    for orientation in orientations:
+        for model_name in MODEL_NAMES:
+            run = get_run_from_model_name(model_name, runs)
+            for subject_id, subject_id_prefix in zip(
+                (
+                    best_subject,
+                    quantile_75th_subject,
+                    median_subject,
+                    quantile_25th_subject,
+                    worst_subject,
+                ),
+                ("best", "quantile_75", "median", "quantile_25", "worst"),
+            ):
+                gt_command = get_visualization_command(
+                    ANATOMY, subject_id, run, orientation, model_name, subject_id_prefix
+                )
+                print(gt_command)

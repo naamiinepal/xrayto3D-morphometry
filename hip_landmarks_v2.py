@@ -133,6 +133,7 @@ def get_landmarks(mesh_obj, mesh_filename):
     superior_boundary = get_farthest_point_along_axis(
         top_left.points(), axis=1, negative=True
     )[0]
+    psis_found = True
     while True:
         top_left_cut = (
             aligned_mesh_obj.clone(transformed=True)
@@ -156,6 +157,8 @@ def get_landmarks(mesh_obj, mesh_filename):
                 )[0]
             )
         except ValueError:
+            print(f"{mesh_filename} error in obtaining psis")
+            psis_found = False
             break
 
         if (
@@ -190,12 +193,17 @@ def get_landmarks(mesh_obj, mesh_filename):
     )
     is_p1_idx = aligned_mesh_obj.closest_point(is_1, return_point_id=True)
     is_p2_idx = aligned_mesh_obj.closest_point(is_2, return_point_id=True)
-    psis_p1_idx = aligned_mesh_obj.closest_point(
-        psis_p1.GetPosition(), return_point_id=True
-    )
-    psis_p2_idx = aligned_mesh_obj.closest_point(
-        psis_p2.GetPosition(), return_point_id=True
-    )
+
+    if psis_found:
+        psis_p1_idx = aligned_mesh_obj.closest_point(
+            psis_p1.GetPosition(), return_point_id=True
+        )
+        psis_p2_idx = aligned_mesh_obj.closest_point(
+            psis_p2.GetPosition(), return_point_id=True
+        )
+    else:
+        psis_p1_idx = None
+        psis_p2_idx = None
 
     return {
         "ASIS_L": asis_p1_idx,
@@ -220,8 +228,12 @@ def main(
 
     landmark_indices, aligned_mesh_obj = get_landmarks(mesh_obj, nifti_filename)
     landmarks = {
-        key: mesh_obj.points()[landmark_indices[key]] for key in landmark_indices
+        key: mesh_obj.points()[landmark_indices[key]]
+        if landmark_indices[key] is not None
+        else np.asarray((0.0, 0.0, 0.0))
+        for key in landmark_indices
     }
+
     landmarks_list = [landmarks[key] for key in landmarks]
     print(get_landmark_formatted_row(nifti_filename, landmarks))
     if not offscreen:
@@ -293,7 +305,10 @@ def pelvic_landmark_helper(nifti_filename, log_dir, log_filename):
 
     landmark_indices, aligned_mesh_obj = get_landmarks(mesh_obj, nifti_filename)
     landmarks = {
-        key: mesh_obj.points()[landmark_indices[key]] for key in landmark_indices
+        key: mesh_obj.points()[landmark_indices[key]]
+        if landmark_indices[key]
+        else (0.0, 0.0, 0.0)
+        for key in landmark_indices
     }
 
     with open(f"{log_dir}/{log_filename}", "a", encoding="utf-8") as f:
@@ -301,5 +316,5 @@ def pelvic_landmark_helper(nifti_filename, log_dir, log_filename):
 
 
 if __name__ == "__main__":
-    single_processing()
-    # process_dir_multithreaded()
+    # single_processing()
+    process_dir_multithreaded()

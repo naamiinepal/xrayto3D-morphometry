@@ -2,8 +2,6 @@ import argparse
 import pandas as pd
 from pathlib import Path
 
-from xrayto3d_morphometry import get_distance_between_points
-
 parser = argparse.ArgumentParser()
 parser.add_argument("csv_file")
 

@@ -219,7 +219,7 @@ if __name__ == "__main__":
     ct_in_path = args.file
     ct_in = nib.load(ct_in_path)
 
-    if args.out == None:
+    if args.out is None:
         parent = Path(ct_in_path).parent
         filestem = Path(ct_in_path).stem.split(".")[0]
         file_out = (

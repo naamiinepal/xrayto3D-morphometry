@@ -48,10 +48,10 @@ def get_best_median_worst_sample(model_name, runs):
     ].values[0]
     quantile_25th_subject = df[df.DSC == df.quantile(q=0.25, numeric_only=True)["DSC"]][
         "subject-id"
-    ]
+    ].values[0]
     quantile_75th_subject = df[df.DSC == df.quantile(q=0.75, numeric_only=True)["DSC"]][
         "subject-id"
-    ]
+    ].values[0]
     return (
         best_subject,
         quantile_75th_subject,
@@ -62,9 +62,18 @@ def get_best_median_worst_sample(model_name, runs):
 
 
 def get_visualization_command(
-    ANATOMY, subject_id, run, orientation, model_name, subject_out_prefix
+    ANATOMY,
+    subject_id,
+    run,
+    orientation,
+    model_name,
+    subject_out_prefix,
+    is_groundtruth=False,
 ):
-    in_file = f"2d-3d-benchmark/{run.id}/evaluation/{subject_id}_pred.nii.gz"
+    if is_groundtruth:
+        in_file = f"2d-3d-benchmark/{run.id}/evaluation/{subject_id}_gt.nii.gz"
+    else:
+        in_file = f"2d-3d-benchmark/{run.id}/evaluation/{subject_id}_pred.nii.gz"
 
     out_file = f"results/{ANATOMY}/{model_name}/{orientation}/{subject_out_prefix}_{orientation}.png"
     Path(out_file).parent.mkdir(parents=True, exist_ok=True)
@@ -95,7 +104,13 @@ if __name__ == "__main__":
             ("best", "quantile_75", "median", "quantile_25", "worst"),
         ):
             gt_command = get_visualization_command(
-                ANATOMY, subject_id, run, orientation, "groundtruth", subject_id_prefix
+                ANATOMY,
+                subject_id,
+                run,
+                orientation,
+                "groundtruth",
+                subject_id_prefix,
+                is_groundtruth=True,
             )
             print(gt_command)
 
@@ -112,7 +127,13 @@ if __name__ == "__main__":
                 ),
                 ("best", "quantile_75", "median", "quantile_25", "worst"),
             ):
-                gt_command = get_visualization_command(
-                    ANATOMY, subject_id, run, orientation, model_name, subject_id_prefix
+                pred_command = get_visualization_command(
+                    ANATOMY,
+                    subject_id,
+                    run,
+                    orientation,
+                    model_name,
+                    subject_id_prefix,
+                    is_groundtruth=False,
                 )
-                print(gt_command)
+                print(pred_command)

@@ -26,6 +26,8 @@ from xrayto3d_morphometry import (
     get_oriented_camera,
 )
 
+BONE_COLOR = (255.0, 193.0, 149.0)
+
 
 def fit_l1(data, alpha=0.2):
     """fit a L1 regularized linear model
@@ -307,7 +309,7 @@ def get_vertebra_measurements(vert_mesh):
         vedo.Points(
             [*a_bs.points(), *a_bi.points(), *a_ba.points(), *a_bp.points()],
             r=8,
-            c="white",
+            c="red",
         ),
         vedo.Points([posterior_most_spp, anterior_most_spp], r=8, c="red"),
         vedo.Points(spinous_process_points),
@@ -350,14 +352,14 @@ def main(
     sideview_cam = get_oriented_camera(vert_mesh, axis=0, camera_dist=200)
     sideview_cam["viewup"] = (0, 1, 0)
     vedo.show(
-        # vert_mesh.c("white", 1.0),
-        vedo.Point(vert_mesh.center_of_mass(), r=16, c="green"),
+        # vert_mesh.c(BONE_COLOR, 1.0),
+        # vedo.Point(vert_mesh.center_of_mass(), r=16, c="green"),
         vert_mesh.clone(transformed=True)
         .cut_with_plane(normal=sym_plane.normal, invert=True)
         .c("white", alpha=0.5),
-        sym_plane.opacity(0.5),
+        # sym_plane.opacity(0.5),
         *visualization_objects,
-        axes=1,
+        axes=3,
         camera=sideview_cam,
         resetcam=False,
         offscreen=offscreen,

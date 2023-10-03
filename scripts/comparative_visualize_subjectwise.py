@@ -4,7 +4,6 @@ from xrayto3d_morphometry import (
     filter_wandb_run,
     get_run_from_model_name,
 )
-import pandas as pd
 from pathlib import Path
 import argparse
 import os

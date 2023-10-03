@@ -65,5 +65,5 @@ def write_text_on_img(model_name, model_img, coords):
     draw.text(coords, model_name, (0, 0, 0), font=font)
 
 
-for subject_type in ["median", "worst", "best"]:
+for subject_type in ("best", "quantile_75", "median", "quantile_25", "worst"):
     save_montage(ANATOMY, subject_type=subject_type)

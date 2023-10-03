@@ -89,6 +89,7 @@ def make_isotropic(
     resampler.SetOutputOrigin(img.GetOrigin())
     resampler.SetTransform(sitk.Transform())
     resampler.SetInterpolator(interpolator)
-    resampler.SetDefaultPixelValue(img.GetPixelIDValue())
+    # resampler.SetDefaultPixelValue(img.GetPixelIDValue())
+    resampler.SetDefaultPixelValue(0)
 
     return resampler.Execute(img)

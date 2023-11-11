@@ -14,6 +14,7 @@ setup(
         "nibabel",
         "pandas",
         "vedo",
+        "scikit-learn",
         "point_cloud_utils",
         "cma",  # for optimization using covariance-matrix adaption
     ],

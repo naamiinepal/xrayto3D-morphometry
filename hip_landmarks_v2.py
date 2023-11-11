@@ -266,14 +266,9 @@ def single_processing():
     main(args.nifti_file, args.offscreen, args.screenshot)
 
 
-def process_dir_multithreaded():
+def process_dir_multithreaded(args):
     """process all files in a dir"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dir", type=str)
-    parser.add_argument("--log_filename", type=str)
 
-    args = parser.parse_args()
-    # write ouput file header
     suffix = "*.nii.gz"
 
     filenames = sorted(list(Path(args.dir).glob(f"{suffix}")))
@@ -316,5 +311,17 @@ def pelvic_landmark_helper(nifti_filename, log_dir, log_filename):
 
 
 if __name__ == "__main__":
-    # single_processing()
-    process_dir_multithreaded()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--nifti_file")
+    parser.add_argument("--offscreen", default=False, action="store_true")
+    parser.add_argument("--screenshot", default=False, action="store_true")
+    parser.add_argument("--dir", type=str)
+    parser.add_argument("--log_filename", type=str)
+
+    args = parser.parse_args()
+
+    if args.nifti_file:
+        main(args.nifti_file, args.offscreen, args.screenshot)
+    
+    if args.dir:
+        process_dir_multithreaded(args)

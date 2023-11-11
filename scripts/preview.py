@@ -1,7 +1,13 @@
+"""
+Please install xvfb via sudo apt install xvfb
+and xvfbwrapper via pip install xvfbwrapper 
+to run this script.
+"""
 from fury import window
 import numpy as np
 import vtk
 from vtk.util import numpy_support
+from nibabel.processing import resample_to_output
 
 # original code from https://github.com/wasserth/TotalSegmentator/blob/master/totalsegmentator/preview.py
 
@@ -197,11 +203,12 @@ if __name__ == "__main__":
     import nibabel as nib
     from pathlib import Path
     import argparse
+    from xrayto3d_morphometry import multiply_tuple
 
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="path to volume")
     parser.add_argument("--label-id", default=1, type=int)
-    parser.add_argument("--size", nargs="+", type=int)
+    parser.add_argument("--size", nargs="+", type=int, default = [500, 500])
     parser.add_argument("--color", nargs="+", type=int, default=[255, 0, 0])
     parser.add_argument(
         "--orientation",
@@ -218,6 +225,8 @@ if __name__ == "__main__":
 
     ct_in_path = args.file
     ct_in = nib.load(ct_in_path)
+    out_voxel_size = (max(ct_in.header.get_zooms()),)*len(ct_in.header.get_zooms())
+    ct_in = resample_to_output(ct_in, voxel_sizes=out_voxel_size,mode='nearest')
 
     if args.out is None:
         parent = Path(ct_in_path).parent

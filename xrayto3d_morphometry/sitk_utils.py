@@ -6,26 +6,26 @@ import vedo
 
 def get_segmentation_labels(segmentation: sitk.Image):
     """return label indexes"""
-    fltr = get_segmentation_stats(segmentation)
-    return fltr.GetLabels()
+    filter = get_segmentation_stats(segmentation)
+    return filter.GetLabels()
 
 
 def get_segmentation_stats(
     segmentation: sitk.Image,
 ) -> sitk.LabelShapeStatisticsImageFilter:
     """return filter obj containing segmentation metadata"""
-    fltr: sitk.LabelShapeStatisticsImageFilter = sitk.LabelShapeStatisticsImageFilter()
-    fltr.ComputeOrientedBoundingBoxOn()
-    fltr.ComputeFeretDiameterOn()
-    fltr.Execute(sitk.Cast(segmentation, sitk.sitkUInt8))
-    return fltr
+    filter: sitk.LabelShapeStatisticsImageFilter = sitk.LabelShapeStatisticsImageFilter()
+    filter.ComputeOrientedBoundingBoxOn()
+    filter.ComputeFeretDiameterOn()
+    filter.Execute(sitk.Cast(segmentation, sitk.sitkUInt8))
+    return filter
 
 
 def change_label(img: sitk.Image, mapping_dict) -> sitk.Image:
     """use SimplITK AggregateLabelMapFilter to merge all segmentation labels to first label. This is used to obtain the bounding box of all the labels"""
-    fltr = sitk.ChangeLabelImageFilter()
-    fltr.SetChangeMap(mapping_dict)
-    return fltr.Execute(sitk.Cast(img, sitk.sitkUInt8))
+    filter = sitk.ChangeLabelImageFilter()
+    filter.SetChangeMap(mapping_dict)
+    return filter.Execute(sitk.Cast(img, sitk.sitkUInt8))
 
 
 def get_segmentation_volume(

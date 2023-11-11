@@ -8,7 +8,7 @@ def get_oriented_camera(mesh_obj: vedo.Mesh, axis, camera_dist=200):
     focal point: mesh_obj center of mass
     camera_position at distance camera_dist from focal_point
     and oriented along CT coordinate system.
-    The view-up vector was empirically determined to obtain sagittal, transverse and anteroposterior views from the camera.
+    The view-up vector was empirically determined to obtain sagittal, transverse and antero-posterior views from the camera.
     """
     x0, x1, y0, y1, z0, z1 = mesh_obj.bounds()
     focal_point = mesh_obj.center_of_mass()

@@ -1,3 +1,7 @@
+"""
+read a csv file containing hip morphometry measurements that contains both groundtruth and predicted 3d hip models identified by the *id* column. Subtract the corresponding columns and obtain the hip morphometry error that includes both reconstruction and measurement errors.
+
+"""
 import argparse
 import pandas as pd
 from pathlib import Path

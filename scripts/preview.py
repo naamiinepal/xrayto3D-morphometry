@@ -203,7 +203,6 @@ if __name__ == "__main__":
     import nibabel as nib
     from pathlib import Path
     import argparse
-    from xrayto3d_morphometry import multiply_tuple
 
     parser = argparse.ArgumentParser()
     parser.add_argument("file", help="path to volume")

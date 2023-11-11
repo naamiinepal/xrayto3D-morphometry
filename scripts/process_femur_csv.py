@@ -1,3 +1,7 @@
+"""
+read a csv file containing femur morphometry measurements that contains both groundtruth and predicted 3d femur models identified by the *id* column. Subtract the corresponding columns and obtain the femur morphometry error that includes both reconstruction and measurement errors.
+
+"""
 import argparse
 import pandas as pd
 from pathlib import Path

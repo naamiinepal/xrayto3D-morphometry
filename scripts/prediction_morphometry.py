@@ -1,5 +1,5 @@
 """model prediction morphometry"""
-import argparse
+
 from typing import Tuple
 from pathlib import Path
 from xrayto3d_morphometry import (

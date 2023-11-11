@@ -131,7 +131,7 @@ def get_ischial_mesh_cut(
 
 
 def get_candidate_ischial_spines(ischial_mesh):
-    ischial_mesh.compute_connectivity()
+    # ischial_mesh.compute_connectivity() AttributeError: 'Mesh' object has no attribute 'compute_connectivity' vedo version '2023.4.6'
     ischial_spines = []
     for i in range(-5, 45, 1):  # rotate mesh along x-axis by (-5,45) degree in stepsize of 1 degree
         ischial_mesh_rotated = ischial_mesh.clone(transformed=True).rotate_x(i)
